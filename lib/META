@@ -1,0 +1,12 @@
+# OASIS_START
+# DO NOT EDIT (digest: 8bd5a03b7bac76b33f3fc9a2a7816784)
+version = "109.24.00"
+description = "Text output utilities"
+requires = "core pa_ounit threads"
+archive(byte) = "textutils.cma"
+archive(byte, plugin) = "textutils.cma"
+archive(native) = "textutils.cmxa"
+archive(native, plugin) = "textutils.cmxs"
+exists_if = "textutils.cma"
+# OASIS_STOP
+
