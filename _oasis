@@ -24,8 +24,11 @@ Library textutils
                       Std
   BuildDepends:       core (>= 109.24.00),
                       pa_ounit (>= 109.18.00),
-                      pa_ounit.syntax
+                      pa_ounit.syntax,
+                      sexplib (>= 109.20.00),
+                      sexplib.syntax,
                       threads
   XMETARequires:      core,
+                      sexplib,
                       pa_ounit,
                       threads
