@@ -32,3 +32,11 @@ Library textutils
                       sexplib,
                       pa_ounit,
                       threads
+
+Document "textutils"
+  Title:                Text output utilities
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  XOCamlbuildPath:      lib
+  XOCamlbuildLibraries: textutils
+
