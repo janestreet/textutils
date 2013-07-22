@@ -62,4 +62,3 @@ val to_string : (_, string) renderer
 val simple_list_table : ?index:bool -> ?limit_width_to:int ->
   ?oc:Out_channel.t -> ?display:Display.t ->
   string list -> string list list -> unit
-

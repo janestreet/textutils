@@ -468,4 +468,3 @@ TEST =
 (* test for bug where specifying minimum widths on all columns causes a Division_by_zero
    error while calculating generic_min_chars in Column.layout *)
 TEST = const true (to_string [Column.create ~min_width:9 "foo" Fn.id] ["bar"])
-
