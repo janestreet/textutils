@@ -143,6 +143,7 @@ end
 module Draw = struct
   type point =
   | Line
+  | Blank
   | Char of Console.Ansi.attr list * char
 
   type screen = {
@@ -156,15 +157,26 @@ module Draw = struct
     { data; rows; cols }
   ;;
 
-  let hline ~screen ~row ~col1 ~col2 =
+  let set_screen_point ~screen ~row ~col ~point =
+    let c = screen.data.(row).(col) in
+    let new_point =
+      match c, point with
+      | Blank, _     -> Blank
+      | _,     Blank -> Blank
+      | _,     point -> point
+    in
+    screen.data.(row).(col) <- new_point
+
+
+  let hline ~screen ~row ~col1 ~col2 ?(point=Line) () =
     for col = col1 to col2 do
-      screen.data.(row).(col) <- Line
+      set_screen_point ~screen ~row ~col ~point
     done
   ;;
 
-  let vline ~screen ~col ~row1 ~row2 =
+  let vline ~screen ~col ~row1 ~row2 ?(point=Line) () =
     for row = row1 to row2 do
-      screen.data.(row).(col) <- Line
+      set_screen_point ~screen ~row ~col ~point
     done
   ;;
 
@@ -205,9 +217,9 @@ module Draw = struct
     | false,  true,  true,  true -> ('-', "\226\148\172")
     |  true, false,  true,  true -> ('-', "\226\148\180")
     |  true,  true,  true,  true -> ('+', "\226\148\188")
-    | false, false,  true, false -> ('|', "\226\149\180")
+    | false, false,  true, false -> ('-', "\226\149\180")
     |  true, false, false, false -> ('|', "\226\149\181")
-    | false, false, false,  true -> ('|', "\226\149\182")
+    | false, false, false,  true -> ('-', "\226\149\182")
     | false,  true, false, false -> ('|', "\226\149\183")
     | false, false, false, false -> (' ', " ")
   ;;
@@ -228,6 +240,8 @@ module Draw = struct
         | Char (attr, ch) ->
           update_attr attr;
           Buffer.add_char buf ch
+        | Blank ->
+          Buffer.add_char buf ' '
         | Line ->
           update_attr [];
           let ascii, utf8 = get_symbol ~screen ~row ~col in
@@ -268,11 +282,13 @@ module Display = struct
   | Tall_box
   | Line
   | Blank
+  | Column_titles
 
   let short_box = Short_box
   let tall_box = Tall_box
   let line = Line
   let blank = Blank
+  let column_titles = Column_titles
 end
 
 module Grid = struct
@@ -323,14 +339,19 @@ module Grid = struct
     let cols = list_sum t.widths  ~f:((+) (1 + (spacing * 2))) + 1               in
     let rows = list_sum t.heights ~f:((+) mid_row)             + 3 - 2 * mid_row in
     let screen = Draw.create_screen ~rows ~cols in
-    Draw.hline ~screen ~row:0          ~col1:0 ~col2:(cols - 1);
-    Draw.hline ~screen ~row:(rows - 1) ~col1:0 ~col2:(cols - 1);
+    let point =
+      if display = Display.Column_titles
+      then Draw.Blank
+      else Draw.Line
+    in
+    Draw.hline ~screen ~row:0          ~col1:0 ~col2:(cols - 1) ~point ();
+    Draw.hline ~screen ~row:(rows - 1) ~col1:0 ~col2:(cols - 1) ~point ();
     if display <> Display.Blank then begin
-      Draw.vline ~screen ~col:0 ~row1:0 ~row2:(rows - 1);
+      Draw.vline ~screen ~col:0 ~row1:0 ~row2:(rows - 1) ~point  ();
       ignore (
         List.fold t.widths ~init:0 ~f:(fun col width ->
           let col = col + 1 + width + spacing * 2 in
-          Draw.vline ~screen ~col ~row1:0 ~row2:(rows - 1);
+          Draw.vline ~screen ~col ~row1:0 ~row2:(rows - 1) ~point ();
           col)
           : int
       );
@@ -364,9 +385,10 @@ module Grid = struct
             : int
         );
         let row = row + height in
+
         if display = Display.Tall_box || header_row then begin
           if display <> Display.Blank then
-            Draw.hline ~screen ~row ~col1:0 ~col2:(cols - 1);
+            Draw.hline ~screen ~row ~col1:0 ~col2:(cols - 1) ();
           row + 1
         end else
           row)
@@ -445,6 +467,7 @@ TEST =
       (to_string ~bars:`Ascii ~display [col1; col2; col3] [("a1", "b1", "c1"); ("a2", "b2", "c2")]) in
   let s_box = stringify Display.short_box in
   let s_blank = stringify Display.blank in
+  let s_column_titles = stringify Display.column_titles in
   s_box = "\
 |--------------|
 | a  | b  | c  |
@@ -455,14 +478,24 @@ TEST =
 
 " &&
   s_blank = String.concat ~sep:"\n" [
-"|--------------|";
+"----------------";
 "  a    b    c   ";
 "                ";
 "  a1   b1   c1  ";
 "  a2   b2   c2  ";
-"|--------------|";
+"----------------";
+"";
+""] &&
+  s_column_titles = String.concat ~sep:"\n" [
+"                ";
+"  a    b    c   ";
+" ---- ---- ---- ";
+"  a1   b1   c1  ";
+"  a2   b2   c2  ";
+"                ";
 "";
 ""]
+
 
 
 (* test for bug where specifying minimum widths on all columns causes a Division_by_zero

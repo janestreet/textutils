@@ -9,10 +9,11 @@ end
 
 module Display : sig
   type t
-  val short_box : t (* Default--cells can be multi-line. *)
-  val tall_box  : t (* Puts --- between entries.         *)
-  val line      : t (* Trails off with ... if necessary. *)
-  val blank     : t (* No lines *)
+  val short_box     : t (* Default--cells can be multi-line.   *)
+  val tall_box      : t (* Puts --- between entries.           *)
+  val line          : t (* Trails off with ... if necessary.   *)
+  val blank         : t (* No lines                            *)
+  val column_titles : t (* Draw lines only under column titles *)
 end
 
 module Column : sig
