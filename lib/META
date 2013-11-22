@@ -1,0 +1,12 @@
+# OASIS_START
+# DO NOT EDIT (digest: d122add947dbdfd1a1364f1d0b0e080b)
+version = "109.52.00"
+description = "Text output utilities"
+requires = "async core sexplib pa_ounit threads"
+archive(byte) = "textutils.cma"
+archive(byte, plugin) = "textutils.cma"
+archive(native) = "textutils.cmxa"
+archive(native, plugin) = "textutils.cmxs"
+exists_if = "textutils.cma"
+# OASIS_STOP
+
