@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 16e865d27a64508eb2b777f945f59cd7) *)
+(* DO NOT EDIT (digest: 2cdee6b782c6d9be09b783535343b6b5) *)
 This is the INSTALL file for the textutils distribution.
 
 This package uses OASIS to generate its build system. See section OASIS for
@@ -27,7 +27,7 @@ Installing
 Uninstalling
 ============
 
-1. Go to the root of the package 
+1. Go to the root of the package
 2. Run 'ocaml setup.ml -uninstall'
 
 OASIS
