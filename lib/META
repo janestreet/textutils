@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: e02e3be1b34584a414cb273acdfc1b67)
-version = "109.53.02"
+# DO NOT EDIT (digest: bf2b9c531d415c38505ff18c34f15d8a)
+version = "109.53.03"
 description = "Text output utilities"
 requires = "async core sexplib pa_ounit threads"
 archive(byte) = "textutils.cma"
