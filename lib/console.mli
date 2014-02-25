@@ -1,7 +1,5 @@
 (** Printing on console tty's  *)
 open Core.Std
-module Deferred : module type of Async.Std.Deferred
-module Writer : module type of Async.Std.Writer
 
 (** Handling of ansi codes. *)
 module Ansi : sig
@@ -50,36 +48,3 @@ val width : unit -> [ `Cols of int | `Not_a_tty | `Not_available ]
 
 (** print a list in a columnize way (like the output of ls) *)
 val print_list : out_channel -> (string * Ansi.attr list) list -> unit
-
-module Log : sig
-  module Output : sig
-    (** returns a [Log.Output.t] given optional styles (i.e. values of type [Ansi.t list])
-        for each of the [`Debug], [`Info], and [`Error] log levels. The default styling is
-        to display debug messages in yellow, error messages in red, and info messages
-        without any additional styling.
-
-        [create] doesn't take a [format] argument because colorized output should be read
-        by humans.
-    *)
-    val create :
-      ?debug:Ansi.attr list
-      -> ?info:Ansi.attr list
-      -> ?error:Ansi.attr list
-      -> Async.Std.Writer.t
-      -> Async.Std.Log.Message.t Queue.t
-      -> unit Deferred.t
-  end
-
-  module Blocking : sig
-    module Output : sig
-      (** as [Output.create] but for use with non-async logs *)
-      val create :
-        ?debug:Ansi.attr list
-        -> ?info:Ansi.attr list
-        -> ?error:Ansi.attr list
-        -> Out_channel.t
-        -> Async.Std.Log.Message.t
-        -> unit
-    end
-  end
-end

@@ -2,7 +2,7 @@ OASISFormat:      0.3
 OCamlVersion:     >= 4.00.0
 FindlibVersion:   >= 1.3.2
 Name:             textutils
-Version:          109.53.00
+Version:          111.03.00
 Synopsis:         Text output utilities
 Authors:          Jane Street Capital LLC <opensource@janestreet.com>
 Copyrights:       (C) 2013 Jane Street Capital LLC <opensource@janestreet.com>
@@ -23,15 +23,13 @@ Library textutils
                       Console,
                       Std,
                       Text_graph
-  BuildDepends:       async,
-                      core,
+  BuildDepends:       core,
                       pa_ounit,
                       pa_ounit.syntax,
                       sexplib,
                       sexplib.syntax,
                       threads
-  XMETARequires:      async,
-                      core,
+  XMETARequires:      core,
                       sexplib,
                       pa_ounit,
                       threads

@@ -1,7 +1,5 @@
 (** Color printing in terminals  *)
 open Core.Std
-module Deferred = Async.Std.Deferred
-module Writer = Async.Std.Writer
 
 (* http://www.termsys.demon.co.uk/vtansi.htm *)
 module Ansi = struct
@@ -259,48 +257,3 @@ let print_list oc l =
          end)
       in
       Col.iter ~sep ~last ~middle l cols
-
-module Log = struct
-  module Alog = Async.Std.Log
-
-  let with_style ~debug ~info ~error msg =
-    let style, prefix =
-      match Alog.Message.level msg with
-      | None -> info, ""
-      | Some `Debug -> debug, "[DEBUG]"
-      | Some `Info  -> info,  " [INFO]"
-      | Some `Error -> error, "[ERROR]"
-    in
-    String.concat ~sep:" "
-      [ prefix
-      ; Alog.Message.message msg ]
-    |> Ansi.string_with_attr style
-
-  module Output = struct
-    let create
-          ?(debug=([`Yellow] :> Ansi.attr list))
-          ?(info=([] :> Ansi.attr list))
-          ?(error=([`Red] :> Ansi.attr list))
-          writer =
-      (fun msgs ->
-         Queue.iter msgs ~f:(fun msg ->
-           with_style ~debug ~info ~error msg
-           |> (fun styled_msg ->
-             Writer.write writer styled_msg;
-             Writer.newline writer));
-         Writer.flushed writer)
-  end
-
-  module Blocking = struct
-    module Output = struct
-      let create
-            ?(debug=([`Yellow] :> Ansi.attr list))
-            ?(info=([] :> Ansi.attr list))
-            ?(error=([`Red] :> Ansi.attr list))
-            outc =
-        (fun msg ->
-           (with_style ~debug ~info ~error msg)
-           |> fun line -> Out_channel.output_lines outc [line])
-    end
-  end
-end
