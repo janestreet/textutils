@@ -26,10 +26,13 @@ let line ~label ~value ~norm =
   assert (0 <= percentage && percentage <= 100);
   let pre =
     if norm > 1.0
-    then sprintf "%.10s %2.2f " label value
+    then sprintf "%.10s %5.2f " label value
     else sprintf "%.10s %8.0f " label value
   in
   pre ^ data_line percentage
+
+TEST = line ~label:"bar1" ~value:1.05062 ~norm:10.0  = "      bar1  1.05 |----+----1"
+TEST = line ~label:"bar2" ~value:499.6   ~norm:0.004 = "      bar2      500 |-"
 
 let render labels_and_values =
   if (List.is_empty labels_and_values
