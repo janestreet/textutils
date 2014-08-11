@@ -1,3 +1,7 @@
+## 111.28.00
+
+- Moved `Text_block` from `Core_extended` into `Textutils`.
+
 ## 111.03.00
 
 - Changed `Textutils.Console` to not reference `Async.Log`, so that
