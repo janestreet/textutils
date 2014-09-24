@@ -1,3 +1,8 @@
+## 112.01.00
+
+- Added `Ascii_table.Table_char`, to expose the special table border
+  characters.
+
 ## 111.28.00
 
 - Moved `Text_block` from `Core_extended` into `Textutils`.

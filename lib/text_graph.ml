@@ -26,8 +26,8 @@ let line ~label ~value ~norm =
   assert (0 <= percentage && percentage <= 100);
   let pre =
     if norm > 1.0
-    then sprintf "%.10s %5.2f " label value
-    else sprintf "%.10s %8.0f " label value
+    then sprintf "%10s %5.2f " label value
+    else sprintf "%10s %8.0f " label value
   in
   pre ^ data_line percentage
 

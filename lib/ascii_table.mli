@@ -63,3 +63,12 @@ val to_string : (_, string) renderer
 val simple_list_table : ?index:bool -> ?limit_width_to:int ->
   ?oc:Out_channel.t -> ?display:Display.t ->
   string list -> string list list -> unit
+
+module Table_char : sig
+  type t = {
+    ascii : char;
+    utf8 : string;
+  }
+
+  val connect : ?top:unit -> ?bottom:unit -> ?left:unit -> ?right:unit -> unit -> t
+end
