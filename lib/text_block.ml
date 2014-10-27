@@ -161,8 +161,7 @@ let rec cons x = function
     else
       cons (hcat ~align:`Bottom [x; y]) zs
 
-let compress_table_header (`Cols cols) =
-  let sep_width = 2 in
+let compress_table_header ?(sep_width = 2) (`Cols cols) =
   let cols =
     List.map cols ~f:(fun (header, data, align) ->
       (header, Int.max 1 (max_width data), halign align data))

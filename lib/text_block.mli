@@ -48,6 +48,7 @@ val render : t -> string
     18   bill        rodriguez            18   bill  rodriguez
     76   rick        jones                76   rick  jones
 *)
-val compress_table_header :
-  [`Cols of (t * t list * halign) list] -> [`Header of t] * [`Rows of t list]
+val compress_table_header
+  :  ?sep_width:int
+  -> [`Cols of (t * t list * halign) list] -> [`Header of t] * [`Rows of t list]
 
