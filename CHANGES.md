@@ -1,3 +1,7 @@
+## 112.17.00
+
+- Added a `~narrow` argument to `Text_graph.render`
+
 ## 112.01.00
 
 - Added `Ascii_table.Table_char`, to expose the special table border

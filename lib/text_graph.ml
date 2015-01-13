@@ -21,7 +21,23 @@ TEST = data_line 27  = "|----+----1----+----2----+--"
 TEST = data_line 0   = "|"
 TEST = data_line 100 = "|----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----|"
 
-let line ~label ~value ~norm =
+let narrow_data_line percentage =
+  let div = 2 in
+  List.init (percentage/div + 1) ~f:(fun i ->
+    let parts_per_10 = 10 / div in
+    if i mod parts_per_10 = 0 then begin
+      let tens = i / parts_per_10 in
+      if tens = 0 || tens = 10
+      then '|'
+      else num_char tens
+    end else '-')
+  |> String.of_char_list
+
+TEST = narrow_data_line 27  = "|----1----2---"
+TEST = narrow_data_line 0   = "|"
+TEST = narrow_data_line 100 = "|----1----2----3----4----5----6----7----8----9----|"
+
+let line ~narrow ~label ~value ~norm =
   let percentage = Option.value (Float.iround_towards_zero (value *. norm)) ~default:0 in
   assert (0 <= percentage && percentage <= 100);
   let pre =
@@ -29,12 +45,14 @@ let line ~label ~value ~norm =
     then sprintf "%10s %5.2f " label value
     else sprintf "%10s %8.0f " label value
   in
-  pre ^ data_line percentage
+  if narrow
+  then pre ^ narrow_data_line percentage
+  else pre ^ data_line percentage
 
-TEST = line ~label:"bar1" ~value:1.05062 ~norm:10.0  = "      bar1  1.05 |----+----1"
-TEST = line ~label:"bar2" ~value:499.6   ~norm:0.004 = "      bar2      500 |-"
+TEST = line ~narrow:false ~label:"bar1" ~value:1.05062 ~norm:10.0  = "      bar1  1.05 |----+----1"
+TEST = line ~narrow:false ~label:"bar2" ~value:499.6   ~norm:0.004 = "      bar2      500 |-"
 
-let render labels_and_values =
+let render ?(narrow=false) labels_and_values =
   if (List.is_empty labels_and_values
       || List.exists ~f:(fun (_, x) -> x < 0.0) labels_and_values)
   then failwiths
@@ -49,10 +67,11 @@ let render labels_and_values =
   in
   let norm = 100.0 /. largest in
   let lines =
-    List.map labels_and_values ~f:(fun (label, value) -> line ~label ~value ~norm)
+    List.map labels_and_values ~f:(fun (label, value) -> line ~narrow ~label ~value ~norm)
   in
   let last_line =
-    sprintf "(each \'-\' is approximately %.3f units.)" (1.0 /. norm)
+    sprintf "(each \'-\' is approximately %.3f units.)"
+      (if narrow then 2.0 /. norm else 1.0 /. norm)
   in
   let concat l = String.concat l ~sep:"\n" in
   concat [concat lines; last_line; ""]

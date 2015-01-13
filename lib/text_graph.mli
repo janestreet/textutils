@@ -18,5 +18,5 @@ open Core.Std
 *)
 
 (** Renders a text graph given labels and values.  The list should be non-empty and the
-    specified values must be positive numbers. *)
-val render : (string * float) list -> string
+    specified values must be positive numbers. Setting narrow enables narrower graphs. *)
+val render : ?narrow:bool -> (string * float) list -> string
