@@ -16,7 +16,7 @@ XStdFilesREADME:  false
 BuildTools:       ocamlbuild, camlp4o
 
 Library textutils
-  Path:               lib
+  Path:               src
   FindlibName:        textutils
   Pack:               true
   Modules:            Ascii_table,
