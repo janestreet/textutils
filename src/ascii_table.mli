@@ -1,10 +1,10 @@
 open Core.Std
 
 module Align : sig
-  type t
-  val left   : t
-  val right  : t
-  val center : t
+  type t =
+    | Left
+    | Right
+    | Center
 end
 
 module Display : sig

@@ -1,3 +1,18 @@
+## 113.24.00
+
+- Switched to PPX.
+
+- Fixed a bug where the computation of cell heights could cause division by zero
+  in some cases.
+
+- Expose the constructors of `Ascii_table.Align.t` so that we can write
+
+    Column.create ~align:Left ...
+
+  instead of
+
+    Column.create ~align:Align.left
+
 ## 112.17.00
 
 - Added a `~narrow` argument to `Text_graph.render`

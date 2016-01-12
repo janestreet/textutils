@@ -11,7 +11,7 @@ module El = struct (* One element in the table. *)
   let create attr str = (attr, String.split ~on:'\n' str)
   let width (_, lines) = list_max ~f:String.length lines
   let height width (_, lines) =
-    list_sum lines ~f:(fun s -> max (((String.length s)+(width-1))/width) 1)
+    list_sum lines ~f:(fun s -> max (((String.length s)+(width-1))/(max width 1)) 1)
   ;;
 
   let rec slices width lines =
@@ -32,12 +32,9 @@ end
 
 module Align = struct
   type t =
-  | Left
-  | Right
-  | Center
-  let left = Left
-  let right = Right
-  let center = Center
+    | Left
+    | Right
+    | Center
 end
 
 type show = [ `Yes | `No | `If_not_empty ]
@@ -55,8 +52,8 @@ module Column = struct
   type constraints = {
     total_width : int;
     min_widths : (string * int) list;
-  } with sexp
-  exception Impossible_table_constraints of constraints with sexp
+  } [@@deriving sexp]
+  exception Impossible_table_constraints of constraints [@@deriving sexp]
 
   let create_attr ?(align=Align.Left) ?min_width ?(max_width=90) ?(show=`Yes)
       str parse_func = {
@@ -473,13 +470,13 @@ let simple_list_table ?(index=false)
   let cols = List.mapi cols ~f:(fun i col ->
     let col, align =
       match String.chop_prefix col ~prefix:"-" with
-      | None -> col, Align.right
-      | Some col -> col, Align.left
+      | None -> col, Align.Right
+      | Some col -> col, Align.Left
     in Column.create col (fun ls -> List.nth_exn ls i) ~align) in
   output ~oc ~display ~limit_width_to cols data
 
 
-TEST =
+let%test _ =
   let col1 = Column.create "a" (fun (x, _, _) -> x) in
   let col2 = Column.create "b" (fun (_, x, _) -> x) in
   let col3 = Column.create "c" (fun (_, _, x) -> x) in
@@ -521,4 +518,4 @@ TEST =
 
 (* test for bug where specifying minimum widths on all columns causes a Division_by_zero
    error while calculating generic_min_chars in Column.layout *)
-TEST = const true (to_string [Column.create ~min_width:9 "foo" Fn.id] ["bar"])
+let%test _ = const true (to_string [Column.create ~min_width:9 "foo" Fn.id] ["bar"])

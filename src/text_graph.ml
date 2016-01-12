@@ -17,9 +17,9 @@ let data_line percentage =
     else '-')
   |> String.of_char_list
 
-TEST = data_line 27  = "|----+----1----+----2----+--"
-TEST = data_line 0   = "|"
-TEST = data_line 100 = "|----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----|"
+let%test _ = data_line 27  = "|----+----1----+----2----+--"
+let%test _ = data_line 0   = "|"
+let%test _ = data_line 100 = "|----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----|"
 
 let narrow_data_line percentage =
   let div = 2 in
@@ -33,9 +33,9 @@ let narrow_data_line percentage =
     end else '-')
   |> String.of_char_list
 
-TEST = narrow_data_line 27  = "|----1----2---"
-TEST = narrow_data_line 0   = "|"
-TEST = narrow_data_line 100 = "|----1----2----3----4----5----6----7----8----9----|"
+let%test _ = narrow_data_line 27  = "|----1----2---"
+let%test _ = narrow_data_line 0   = "|"
+let%test _ = narrow_data_line 100 = "|----1----2----3----4----5----6----7----8----9----|"
 
 let line ~narrow ~label ~value ~norm =
   let percentage = Option.value (Float.iround_towards_zero (value *. norm)) ~default:0 in
@@ -49,8 +49,8 @@ let line ~narrow ~label ~value ~norm =
   then pre ^ narrow_data_line percentage
   else pre ^ data_line percentage
 
-TEST = line ~narrow:false ~label:"bar1" ~value:1.05062 ~norm:10.0  = "      bar1  1.05 |----+----1"
-TEST = line ~narrow:false ~label:"bar2" ~value:499.6   ~norm:0.004 = "      bar2      500 |-"
+let%test _ = line ~narrow:false ~label:"bar1" ~value:1.05062 ~norm:10.0  = "      bar1  1.05 |----+----1"
+let%test _ = line ~narrow:false ~label:"bar2" ~value:499.6   ~norm:0.004 = "      bar2      500 |-"
 
 let render ?(narrow=false) labels_and_values =
   if (List.is_empty labels_and_values
@@ -58,7 +58,7 @@ let render ?(narrow=false) labels_and_values =
   then failwiths
     "Text_graph.render: Labels and values should be non-empty and values must be positive"
     labels_and_values
-    <:sexp_of< (string * float) list >>;
+    [%sexp_of: (string * float) list];
   let largest =
     match labels_and_values with
     | [] -> assert false (* checked above *)
