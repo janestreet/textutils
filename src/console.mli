@@ -1,5 +1,5 @@
 (** Printing on console tty's  *)
-open Core.Std
+open! Core.Std
 
 (** Handling of ansi codes. *)
 module Ansi : sig
