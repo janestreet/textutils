@@ -29,11 +29,11 @@ module Ansi : sig
   | `Bg of color
   ]
 
-  val printf  : attr list -> ('a, out_channel, unit) format -> 'a
-  val eprintf : attr list -> ('a, out_channel, unit) format -> 'a
+  val printf  : attr list -> ('a, Out_channel.t, unit) format -> 'a
+  val eprintf : attr list -> ('a, Out_channel.t, unit) format -> 'a
 
-  val output_string : attr list -> out_channel -> string -> unit
-  val output : attr list -> out_channel -> string -> int -> int -> unit
+  val output_string : attr list -> Out_channel.t -> string -> unit
+  val output : attr list -> Out_channel.t -> string -> int -> int -> unit
 
   (* Create string with embedded formatting codes *)
   val string_with_attr : attr list -> string -> string
@@ -47,4 +47,4 @@ val is_color_tty : unit -> bool
 val width : unit -> [ `Cols of int | `Not_a_tty | `Not_available ]
 
 (** print a list in a columnize way (like the output of ls) *)
-val print_list : out_channel -> (string * Ansi.attr list) list -> unit
+val print_list : Out_channel.t -> (string * Ansi.attr list) list -> unit

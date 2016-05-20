@@ -1,3 +1,5 @@
+open Core.Std
+
 (** two dimensional blocks of text *)
 type t
 
@@ -33,7 +35,7 @@ val hstrut : int -> t
 val vstrut : int -> t
 
 (* render a block of text as a string *)
-val render : t -> string
+val render : ?rstrip:unit -> t -> string
 
 (* compress table header according to column widths.
   Input:  a list of columns of the form (title, values, column alignment).
@@ -52,3 +54,19 @@ val compress_table_header
   :  ?sep_width:int
   -> [`Cols of (t * t list * halign) list] -> [`Header of t] * [`Rows of t list]
 
+(* convenience definitions *)
+
+(** [vsep = vstrut 1] *)
+val vsep : t
+
+(** [hsep = hstrut 1] *)
+val hsep : t
+
+(** [indent ~n t = hcat [hstrut n; t]].  [n] defaults to [2] *)
+val indent : ?n:int -> t -> t
+
+(** [sexp sexp_of_a a = sexp_of_a a |> Sexp.to_string |> text] *)
+val sexp : ('a -> Sexp.t) -> 'a -> t
+
+(** variant of [text] that takes a format string *)
+val textf : ('r, unit, string, t) format4 -> 'r

@@ -110,12 +110,12 @@ module Ansi = struct
 
   let output (style:attr list) oc s start len =
     if Lazy.force capable && style <> [] then begin
-      output_string oc (Attr.list_to_string (style :> Attr.t list));
-      output oc s start len;
-      output_string oc (Attr.list_to_string [`Reset]);
-      flush oc
+      Out_channel.output_string oc (Attr.list_to_string (style :> Attr.t list));
+      Out_channel.output oc ~buf:s ~pos:start ~len;
+      Out_channel.output_string oc (Attr.list_to_string [`Reset]);
+      Out_channel.flush oc
     end else
-      output oc s start len
+      Out_channel.output oc ~buf:s ~pos:start ~len
 
   let output_string (style:attr list) oc s =
     output style oc s 0 (String.length s)
@@ -244,10 +244,10 @@ let print_list oc l =
         Ansi.output_string style oc s
       in
       let sep = "  ",[] in
-      let last v _ = print_styled v; output_string oc "\n"
+      let last v _ = print_styled v; Out_channel.output_string oc "\n"
       and middle ~sep v pad_len =
         print_styled v;
-        output_string oc (String.make pad_len ' ');
+        Out_channel.output_string oc (String.make pad_len ' ');
         print_styled sep
       in
       let module Col = Columnize

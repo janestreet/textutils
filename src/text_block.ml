@@ -114,15 +114,13 @@ let vcat ?(align = `Left) ?sep ts =
 let text ?(align = `Left) str =
   if String.mem str '\n' then
     String.split ~on:'\n' str
-    |! List.map ~f:(fun line -> Text line)
-    |! vcat ~align
+    |> List.map ~f:(fun line -> Text line)
+    |> vcat ~align
   else
     Text str
 
-let render t =
-  let buf = String.make (height t * (1 + width t)) ' ' in
-  let write_direct c i j = buf.[i + j * (1 + width t)] <- c in
-  for j = 0 to height t - 1 do write_direct '\n' (width t) j done;
+let render_aux t ~write_direct ~line_length =
+  for j = 0 to height t - 1 do write_direct '\n' (line_length j) j done;
   let write_flipped c j i = write_direct c i j in
   let rec aux t offset write_direct write_flipped =
     match t with
@@ -148,8 +146,50 @@ let render t =
       in
       aux t2 offset' write_direct write_flipped
   in
-  aux t {width = 0; height = 0} write_direct write_flipped;
-  buf
+  aux t {width = 0; height = 0} write_direct write_flipped
+
+module Padded = struct
+  let render t =
+    let height = height t in
+    let width  = width  t in
+    let buf = String.make (height * (1 + width)) ' ' in
+    let write_direct c i j = buf.[i + j * (1 + width)] <- c in
+    let line_length _ = width in
+    render_aux t ~write_direct ~line_length;
+    buf
+end
+
+module Rstripped = struct
+  let line_lengths t =
+    let r = Array.create ~len:(height t) 0 in
+    let write_direct c i j =
+      if not (Char.is_whitespace c) then
+        r.(j) <- Int.max r.(j) (i + 1)
+    in
+    let line_length _ = -1 (* doesn't matter *) in
+    render_aux t ~write_direct ~line_length;
+    r
+
+  let render t =
+    let line_lengths = line_lengths t in
+    let (line_offsets, buflen) =
+      let height = height t in
+      let r = Array.create ~len:height 0 in
+      let line_offset j = r.(j - 1) + line_lengths.(j - 1) + 1 in
+      for j = 1 to height - 1 do r.(j) <- line_offset j done;
+      (r, line_offset height)
+    in
+    let buf = String.make buflen ' ' in
+    let write_direct c i j = buf.[i + line_offsets.(j)] <- c in
+    let line_length j = line_lengths.(j) in
+    render_aux t ~write_direct ~line_length;
+    buf
+end
+
+let render ?rstrip t =
+  match rstrip with
+  | None    -> Padded.render    t
+  | Some () -> Rstripped.render t
 
 (* header compression *)
 
@@ -194,8 +234,19 @@ let compress_table_header ?(sep_width = 2) (`Cols cols) =
   in
   let rows =
     List.map cols ~f:(fun (_, _, data) -> data)
-    |! List.transpose_exn
-    |! List.map ~f:(fun row -> hcat row ~sep:(hstrut sep_width))
+    |> List.transpose_exn
+    |> List.map ~f:(fun row -> hcat row ~sep:(hstrut sep_width))
   in
   (`Header header, `Rows rows)
 
+(* convenience definitions *)
+
+let vsep = vstrut 1
+
+let hsep = hstrut 1
+
+let indent ?(n = 2) t = hcat [hstrut n; t]
+
+let sexp sexp_of_a a = sexp_of_a a |> Sexp.to_string |> text
+
+let textf fmt = ksprintf text fmt
