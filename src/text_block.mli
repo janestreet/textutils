@@ -1,43 +1,49 @@
 open Core.Std
 
 (** two dimensional blocks of text *)
-type t
+type t [@@deriving sexp_of]
 
-(* the empty block. a left and right unit to both [hcat] and [vcat] *)
+include Invariant.S with type t := t
+
+(** the empty block. a left and right unit to both [hcat] and [vcat] *)
 val nil : t
 
-(* [fill] and [space] assume width and height are non-negative *)
+(** [fill] and [space] assume width and height are non-negative *)
 val fill  : char -> width:int -> height:int -> t
 val space :         width:int -> height:int -> t
 
-(* vertical and horizontal alignment specifications *)
+(** vertical and horizontal alignment specifications *)
 type valign = [`Top | `Bottom | `Center]
 type halign = [`Left | `Right | `Center]
 
-(* a basic block of text, split on newlines and horizontally aligned as specified *)
+(** a basic block of text, split on newlines and horizontally aligned as specified *)
 val text : ?align:halign -> string -> t
 
-(* vertical and horizontal concatenation with alignment *)
+(** vertical and horizontal concatenation with alignment *)
 val vcat : ?align:halign -> ?sep:t -> t list -> t
 val hcat : ?align:valign -> ?sep:t -> t list -> t
 
-(* text block dimensions *)
+(** text block dimensions *)
 val width  : t -> int
 val height : t -> int
 
-(* vertical and horizontal sequence alignment *)
+(** vertical and horizontal sequence alignment *)
 val valign : valign -> t list -> t list
 val halign : halign -> t list -> t list
 
-(* empty blocks with either horizontal or vertical extent -- useful for specifing a
-   minimum width or height in conjunction with valign or halign, respectively *)
+(** empty blocks with either horizontal or vertical extent -- useful for specifing a
+    minimum width or height in conjunction with valign or halign, respectively *)
 val hstrut : int -> t
 val vstrut : int -> t
 
-(* render a block of text as a string *)
-val render : ?rstrip:unit -> t -> string
+(** wrap a block with an ANSI escape sequence.
+    The [prefix] and [suffix] arguments should render with zero width and height. *)
+val ansi_escape : ?prefix:string -> ?suffix:string -> t -> t
 
-(* compress table header according to column widths.
+(** render a block of text as a string *)
+val render : t -> string
+
+(** compress table header according to column widths.
   Input:  a list of columns of the form (title, values, column alignment).
   Output: one header block and row sequence.
   Raises: if the [values] lists are not the same length in each column.

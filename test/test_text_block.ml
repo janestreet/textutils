@@ -6,44 +6,35 @@ open Text_block
 
 let yoyoma : t list = [text "yo"; text "yo"; text "ma";]
 
-let lines   = String.split  ~on:'\n'
-let unlines = String.concat ~sep:"\n"
-
 let test t =
-  let s_padded   = render            t in
-  let s_stripped = render ~rstrip:() t in
-  begin
-    match
-      Or_error.try_with (fun () ->
-        [%test_result: string] s_stripped
-          ~expect:(lines s_padded |> List.map ~f:String.rstrip |> unlines))
-    with
-    | Ok () -> ()
-    | Error e -> print_s ([%sexp_of: Error.t] (Error.tag e ~tag:"RAISED"))
-  end;
-  print_endline s_padded
+  invariant t;
+  print_endline (render t)
 
 let%expect_test _ =
   test (hcat yoyoma);
   [%expect {|
-    yoyoma |}]
+    yoyoma
+  |}]
 
 let%expect_test _ =
   test (hcat ~sep:(hstrut 1) yoyoma);
   [%expect {|
-    yo yo ma |}]
+    yo yo ma
+  |}]
 
 let%expect_test _ =
   test (hcat ~sep:(hstrut 2) yoyoma);
   [%expect {|
-    yo  yo  ma |}]
+    yo  yo  ma
+  |}]
 
 let%expect_test _ =
   test (vcat yoyoma);
   [%expect {|
     yo
     yo
-    ma |}]
+    ma
+  |}]
 
 let%expect_test _ =
   test (vcat ~sep:(vstrut 1) yoyoma);
@@ -52,7 +43,8 @@ let%expect_test _ =
 
     yo
 
-    ma |}]
+    ma
+  |}]
 
 let%expect_test _ =
   test (vcat ~sep:(vstrut 2) yoyoma);
@@ -63,7 +55,8 @@ let%expect_test _ =
     yo
 
 
-    ma |}]
+    ma
+  |}]
 
 let sep = text "."
 
@@ -72,7 +65,8 @@ let%expect_test _ =
   [%expect {|
     yo.yoyoma
     yo
-    ma |}]
+    ma
+  |}]
 
 let%expect_test _ =
   test (hcat ~sep [hcat yoyoma; vcat yoyoma]);
@@ -80,7 +74,7 @@ let%expect_test _ =
     yoyoma.yo
            yo
            ma
-    |}]
+  |}]
 
 let%expect_test _ =
   test (vcat ~sep [vcat yoyoma; hcat yoyoma]);
@@ -90,7 +84,7 @@ let%expect_test _ =
     ma
     .
     yoyoma
-    |}]
+  |}]
 
 let%expect_test _ =
   test (vcat ~sep [hcat yoyoma; vcat yoyoma]);
@@ -99,4 +93,39 @@ let%expect_test _ =
     .
     yo
     yo
-    ma |}]
+    ma
+  |}]
+
+(* lines with trailing whitespace used to tickle a bug *)
+
+let%expect_test _ =
+  test
+    (vcat [
+       hcat [text "a"; text " "];
+       hcat [text "b"]
+     ]);
+  [%expect {|
+    a
+    b
+  |}]
+
+let%expect_test _ =
+  test
+    (vcat [
+       hcat [text "a"; text "    "];
+       hcat [text "b"]
+     ]);
+  [%expect {|
+    a
+    b
+  |}]
+
+let yellow = ansi_escape ~prefix:"[33m" ~suffix:"[39m"
+
+let%expect_test _ =
+  test (yellow (vcat yoyoma));
+  [%expect {|
+    [33myo[39m
+    [33myo[39m
+    [33mma[39m
+  |}]

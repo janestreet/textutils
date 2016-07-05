@@ -3,58 +3,80 @@ open Core.Std
 open Int.Replace_polymorphic_compare
 
 type dims = { width : int; height : int }
-  (* INVARIANT: width and height are both non-negative *)
 
-type valign = [`Top | `Bottom | `Center]
-type halign = [`Left | `Right | `Center]
+let sexp_of_dims {width; height} =
+  sexp_of_string (sprintf "w%dh%d" width height)
+
+let dims_invariant {width; height} =
+  assert (width >= 0);
+  assert (height >= 0)
+
+type valign = [`Top | `Bottom | `Center] [@@deriving sexp_of]
+type halign = [`Left | `Right | `Center] [@@deriving sexp_of]
 
 type t =
   | Text of string
-  | Fill of char option * dims
+  | Fill of char * dims
   | Hcat of t * t * dims
-  | Flip of t * dims (* reflect across the line x = y *)
+  | Vcat of t * t * dims
+  | Ansi of string option * t * string option * dims
+[@@deriving sexp_of]
 
-(* INVARIANTS:
-    For each [Text x],
-      [x] contains no newlines.
-    For each [Hcat (t1, t2, {height = h; width = w})],
-      h = height t1 = height t2, and
-      w = width t1 + width t2
-*)
+let height = function
+  | Text _ -> 1
+  | Fill (_, d) | Hcat (_, _, d) | Vcat (_, _, d) | Ansi (_, _, _, d) -> d.height
+
+let width = function
+  | Text s -> String.length s
+  | Fill (_, d) | Hcat (_, _, d) | Vcat (_, _, d) | Ansi (_, _, _, d) -> d.width
+
+let rec invariant t =
+  match t with
+  | Text s ->
+    assert (not (String.mem s '\n'));
+  | Fill (_, dims) ->
+    dims_invariant dims;
+  | Hcat (t1, t2, dims) ->
+    dims_invariant dims;
+    invariant t1;
+    invariant t2;
+    [%test_result:int] (height t1) ~expect:dims.height;
+    [%test_result:int] (height t2) ~expect:dims.height;
+    [%test_result:int] (width t1 + width t2) ~expect:dims.width
+  | Vcat (t1, t2, dims) ->
+    dims_invariant dims;
+    invariant t1;
+    invariant t2;
+    [%test_result:int] (width t1) ~expect:dims.width;
+    [%test_result:int] (width t2) ~expect:dims.width;
+    [%test_result:int] (height t1 + height t2) ~expect:dims.height
+  | Ansi (_, t, _, dims) ->
+    dims_invariant dims;
+    invariant t;
+    [%test_result:int] (width  t) ~expect:dims.width;
+    [%test_result:int] (height t) ~expect:dims.height
 
 let fill_generic ch ~width ~height =
   assert (width >= 0);
   assert (height >= 0);
   Fill (ch, {width; height})
 
-let fill ch ~width ~height = fill_generic (Some ch) ~width ~height
-let space   ~width ~height = fill_generic None      ~width ~height
+let fill ch ~width ~height = fill_generic ch  ~width ~height
+let space   ~width ~height = fill_generic ' ' ~width ~height
 
 let nil = space ~width:0 ~height:0
 
 let hstrut width = space ~width ~height:0
 let vstrut height = space ~height ~width:0
 
-let height = function
-  | Text _ -> 1
-  | Fill (_, d) | Hcat (_, _, d) | Flip (_, d) -> d.height
-
-let width = function
-  | Text s -> String.length s
-  | Fill (_, d) | Hcat (_, _, d) | Flip (_, d) -> d.width
-
 let dims t = {width = width t; height = height t}
-
-let flip_dims {width = w; height = h} = {width = h; height = w}
-
-let flip = function
-  | Flip (t, _) -> t
-  | t -> Flip (t, flip_dims (dims t))
 
 let halve n =
   let fst = n / 2 in
   let snd = fst + n mod 2 in
   (fst, snd)
+
+let ansi_escape ?prefix ?suffix t = Ansi (prefix, t, suffix, dims t)
 
 let rec hpad t ~align delta =
   assert (delta >= 0);
@@ -71,14 +93,20 @@ let rec hpad t ~align delta =
       t
   end
 
-let vpad t ~align delta =
-  let align =
+let rec vpad t ~align delta =
+  assert (delta >= 0);
+  if delta = 0 then t else begin
+    let width = width t in
+    let pad = space ~width ~height:delta in
     match align with
-    | `Top    -> `Left
-    | `Bottom -> `Right
-    | `Center -> `Center
-  in
-  flip (hpad (flip t) ~align delta)
+    | `Top    -> Vcat (t, pad, {width; height = height t + delta})
+    | `Bottom -> Vcat (pad, t, {width; height = height t + delta})
+    | `Center ->
+      let (delta1, delta2) = halve delta in
+      let t = vpad t ~align:`Top    delta1 in
+      let t = vpad t ~align:`Bottom delta2 in
+      t
+  end
 
 let max_height ts = List.fold ts ~init:0 ~f:(fun acc t -> Int.max acc (height t))
 let max_width  ts = List.fold ts ~init:0 ~f:(fun acc t -> Int.max acc (width  t))
@@ -102,14 +130,14 @@ let hcat ?(align = `Top) ?sep ts =
       Hcat (acc, t, {height = height acc; width = width acc + width t}))
 
 let vcat ?(align = `Left) ?sep ts =
-  let align =
-    match align with
-    | `Left   -> `Top
-    | `Right  -> `Bottom
-    | `Center -> `Center
-  in
-  let sep = Option.map sep ~f:flip in
-  flip (hcat ~align ?sep (List.map ~f:flip ts))
+  let ts = Option.fold sep ~init:ts ~f:(fun ts sep -> List.intersperse ts ~sep) in
+  let ts = halign align ts in
+  match ts with
+  | [] -> nil
+  | t :: ts ->
+    List.fold ~init:t ts ~f:(fun acc t ->
+      assert (width acc = width t);
+      Vcat (acc, t, {width = width acc; height = height acc + height t}))
 
 let text ?(align = `Left) str =
   if String.mem str '\n' then
@@ -119,77 +147,76 @@ let text ?(align = `Left) str =
   else
     Text str
 
-let render_aux t ~write_direct ~line_length =
+(* an abstract renderer, instantiated once to compute line lengths and then again to
+   actually produce a string. *)
+let render_abstract t ~write_direct ~line_length =
   for j = 0 to height t - 1 do write_direct '\n' (line_length j) j done;
-  let write_flipped c j i = write_direct c i j in
-  let rec aux t offset write_direct write_flipped =
-    match t with
-    | Text s ->
-      for i = 0 to String.length s - 1 do
-        write_direct s.[i] (i + offset.width) offset.height
-      done
-    | Fill (ch, d) ->
-      Option.iter ch ~f:(fun ch ->
-        for i = 0 to d.width - 1 do
-          for j = 0 to d.height - 1 do
-            write_direct ch
-              (i + offset.width)
-              (j + offset.height)
-          done
-        done)
-    | Flip (t, _) ->
-      aux t (flip_dims offset) write_flipped write_direct
-    | Hcat (t1, t2, _) ->
-      aux t1 offset write_direct write_flipped;
-      let offset' =
-        {height = offset.height; width = offset.width + width t1}
-      in
-      aux t2 offset' write_direct write_flipped
+  let next_i = Array.init (height t) ~f:(fun _ -> 0) in
+  let add_char c j =
+    let i = next_i.(j) in
+    next_i.(j) <- i + 1;
+    write_direct c i j
   in
-  aux t {width = 0; height = 0} write_direct write_flipped
+  let write_string s j =
+    for i = 0 to String.length s - 1 do
+      add_char s.[i] j
+    done
+  in
+  let rec aux t j_offset =
+    match t with
+    | Text s -> write_string s j_offset
+    | Fill (ch, d) ->
+      for _i = 0 to d.width - 1 do
+        for j = 0 to d.height - 1 do
+          add_char ch (j + j_offset)
+        done
+      done
+    | Vcat (t1, t2, _) ->
+      aux t1 j_offset;
+      aux t2 (j_offset + height t1)
+    | Hcat (t1, t2, _) ->
+      aux t1 j_offset;
+      aux t2 j_offset;
+    | Ansi (prefix, t, suffix, _) ->
+      let vcopy s =
+        Option.iter s ~f:(fun s ->
+          for j = 0 to height t - 1 do
+            write_string s (j + j_offset);
+          done)
+      in
+      vcopy prefix;
+      aux t j_offset;
+      vcopy suffix;
+  in
+  aux t 0
 
-module Padded = struct
-  let render t =
+let line_lengths t =
+  let r = Array.create ~len:(height t) 0 in
+  let write_direct c i j =
+    if not (Char.is_whitespace c) then
+      r.(j) <- Int.max r.(j) (i + 1)
+  in
+  let line_length _ = -1 (* doesn't matter *) in
+  render_abstract t ~write_direct ~line_length;
+  r
+
+let render t =
+  let line_lengths = line_lengths t in
+  let (line_offsets, buflen) =
     let height = height t in
-    let width  = width  t in
-    let buf = String.make (height * (1 + width)) ' ' in
-    let write_direct c i j = buf.[i + j * (1 + width)] <- c in
-    let line_length _ = width in
-    render_aux t ~write_direct ~line_length;
-    buf
-end
-
-module Rstripped = struct
-  let line_lengths t =
-    let r = Array.create ~len:(height t) 0 in
-    let write_direct c i j =
-      if not (Char.is_whitespace c) then
-        r.(j) <- Int.max r.(j) (i + 1)
-    in
-    let line_length _ = -1 (* doesn't matter *) in
-    render_aux t ~write_direct ~line_length;
-    r
-
-  let render t =
-    let line_lengths = line_lengths t in
-    let (line_offsets, buflen) =
-      let height = height t in
-      let r = Array.create ~len:height 0 in
-      let line_offset j = r.(j - 1) + line_lengths.(j - 1) + 1 in
-      for j = 1 to height - 1 do r.(j) <- line_offset j done;
-      (r, line_offset height)
-    in
-    let buf = String.make buflen ' ' in
-    let write_direct c i j = buf.[i + line_offsets.(j)] <- c in
-    let line_length j = line_lengths.(j) in
-    render_aux t ~write_direct ~line_length;
-    buf
-end
-
-let render ?rstrip t =
-  match rstrip with
-  | None    -> Padded.render    t
-  | Some () -> Rstripped.render t
+    let r = Array.create ~len:height 0 in
+    let line_offset j = r.(j - 1) + line_lengths.(j - 1) + 1 in
+    for j = 1 to height - 1 do r.(j) <- line_offset j done;
+    (r, line_offset height)
+  in
+  let buf = String.make buflen ' ' in
+  let write_direct c i j =
+    if Char.equal c '\n' || i < line_lengths.(j) then
+      buf.[i + line_offsets.(j)] <- c
+  in
+  let line_length j = line_lengths.(j) in
+  render_abstract t ~write_direct ~line_length;
+  buf
 
 (* header compression *)
 
