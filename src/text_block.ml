@@ -201,22 +201,24 @@ let line_lengths t =
   r
 
 let render t =
-  let line_lengths = line_lengths t in
-  let (line_offsets, buflen) =
-    let height = height t in
-    let r = Array.create ~len:height 0 in
-    let line_offset j = r.(j - 1) + line_lengths.(j - 1) + 1 in
-    for j = 1 to height - 1 do r.(j) <- line_offset j done;
-    (r, line_offset height)
-  in
-  let buf = String.make buflen ' ' in
-  let write_direct c i j =
-    if Char.equal c '\n' || i < line_lengths.(j) then
-      buf.[i + line_offsets.(j)] <- c
-  in
-  let line_length j = line_lengths.(j) in
-  render_abstract t ~write_direct ~line_length;
-  buf
+  let height = height t in
+  if height = 0 then "" else begin
+    let line_lengths = line_lengths t in
+    let (line_offsets, buflen) =
+      let r = Array.create ~len:height 0 in
+      let line_offset j = r.(j - 1) + line_lengths.(j - 1) + 1 in
+      for j = 1 to height - 1 do r.(j) <- line_offset j done;
+      (r, line_offset height)
+    in
+    let buf = String.make buflen ' ' in
+    let write_direct c i j =
+      if Char.equal c '\n' || i < line_lengths.(j) then
+        buf.[i + line_offsets.(j)] <- c
+    in
+    let line_length j = line_lengths.(j) in
+    render_abstract t ~write_direct ~line_length;
+    buf
+  end
 
 (* header compression *)
 
@@ -274,6 +276,6 @@ let hsep = hstrut 1
 
 let indent ?(n = 2) t = hcat [hstrut n; t]
 
-let sexp sexp_of_a a = sexp_of_a a |> Sexp.to_string |> text
+let sexp sexp_of_a a = sexp_of_a a |> Sexp.to_string_hum |> text
 
 let textf fmt = ksprintf text fmt
