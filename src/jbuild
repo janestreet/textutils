@@ -1,0 +1,4 @@
+(library
+ ((name textutils)
+  (public_name textutils)
+  (libraries (core))))
