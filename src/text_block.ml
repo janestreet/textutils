@@ -268,6 +268,18 @@ let compress_table_header ?(sep_width = 2) (`Cols cols) =
   in
   (`Header header, `Rows rows)
 
+let table ?(sep_width = 2) (`Cols cols) =
+  let cols =
+    List.map cols ~f:(fun (data, align) ->
+      (Int.max 1 (max_width data), halign align data))
+  in
+  let rows =
+    List.map cols ~f:(fun (_, data) -> data)
+    |> List.transpose_exn
+    |> List.map ~f:(fun row -> hcat row ~sep:(hstrut sep_width))
+  in
+  `Rows rows
+
 (* convenience definitions *)
 
 let vsep = vstrut 1

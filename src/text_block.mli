@@ -43,6 +43,10 @@ val ansi_escape : ?prefix:string -> ?suffix:string -> t -> t
 (** render a block of text as a string *)
 val render : t -> string
 
+val table
+  :  ?sep_width:int
+  -> [`Cols of (t list * halign) list] -> [`Rows of t list]
+
 (** compress table header according to column widths.
   Input:  a list of columns of the form (title, values, column alignment).
   Output: one header block and row sequence.
