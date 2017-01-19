@@ -76,11 +76,15 @@ module Column = struct
 
   let desired_width ~spacing data t  =
     let column_data = List.map data ~f:t.col_func in
+    let header_width =
+      String.split t.header ~on:'\n'
+      |> list_max ~f:String.length
+    in
     (* We need to account for the '|' to the left, so we add 1 plus the spacing
        on either side. *)
     1 + (2*spacing)
     + (min (t.max_text_width - (1+(2*spacing)))
-         (max (String.length t.header) (list_max column_data ~f:El.width)))
+         (max header_width (list_max column_data ~f:El.width)))
   ;;
 
   let layout ~spacing table_width ts data =
