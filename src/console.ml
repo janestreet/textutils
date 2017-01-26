@@ -1,5 +1,5 @@
 (** Color printing in terminals  *)
-open Core.Std
+open Core
 
 (* http://www.termsys.demon.co.uk/vtansi.htm *)
 module Ansi = struct

@@ -1,4 +1,4 @@
-open Core.Std
+open Core
 
 let list_sum ~f lst = List.fold lst ~init:0 ~f:(fun a b -> a + (f b))
 let list_max ~f lst = List.fold lst ~init:0 ~f:(fun a b -> max a (f b))

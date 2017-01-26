@@ -1,4 +1,4 @@
-open Core.Std
+open Core
 
 let num_char n =
   Char.of_int_exn ((Char.to_int '0') + n)

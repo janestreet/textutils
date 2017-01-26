@@ -1,4 +1,4 @@
-open! Core.Std
+open! Core
 
 (** This module renders text graphs to visualize data on the terminal. A typical text
     graph looks like a bar graph as shown below:

@@ -1,4 +1,4 @@
-open Core.Std
+open Core
 
 (** two dimensional blocks of text *)
 type t [@@deriving sexp_of]
