@@ -1,5 +1,5 @@
 open! Core
-open! Async.Std
+open! Async
 
 include Expect_test_helpers
 include Textutils.Std
