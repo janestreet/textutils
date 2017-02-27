@@ -2,3 +2,5 @@
  ((name textutils)
   (public_name textutils)
   (libraries (core))))
+
+(jbuild_version jane_street)

@@ -1,3 +1,5 @@
 (library
  ((name textutils_test)
   (libraries (expect_test_helpers textutils))))
+
+(jbuild_version jane_street)
