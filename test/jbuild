@@ -1,5 +1,6 @@
 (library
  ((name textutils_test)
-  (libraries (expect_test_helpers textutils))))
+  (libraries (expect_test_helpers textutils))
+  (preprocess (pps (ppx_jane)))))
 
 (jbuild_version jane_street)

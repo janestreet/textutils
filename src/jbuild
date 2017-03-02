@@ -1,6 +1,7 @@
 (library
  ((name textutils)
   (public_name textutils)
-  (libraries (core))))
+  (libraries (core))
+  (preprocess (pps (ppx_jane)))))
 
 (jbuild_version jane_street)
