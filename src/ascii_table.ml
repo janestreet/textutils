@@ -8,7 +8,7 @@ module El = struct (* One element in the table. *)
   type row = t list
   type grid = row list
 
-  let create attr str = (attr, String.split ~on:'\n' str)
+  let create attr str = (attr, String.split_lines str)
   let width (_, lines) = list_max ~f:String.length lines
   let height width (_, lines) =
     list_sum lines ~f:(fun s -> max (((String.length s)+(width-1))/(max width 1)) 1)
@@ -21,12 +21,12 @@ module El = struct (* One element in the table. *)
       slices_split width lines line (String.length line) 0
 
   and slices_split width lines line line_len pos =
-    if pos >= line_len then
-      slices width lines
-    else
-      let chunk_len = min width (line_len - pos) in
-      let chunk = String.sub line ~pos ~len:chunk_len in
-      chunk :: slices_split width lines line line_len (pos + width)
+    let chunk_len = min width (line_len - pos) in
+    let completely_fits = Int.(=) chunk_len (line_len - pos) in
+    let chunk = String.sub line ~pos ~len:chunk_len in
+    if completely_fits
+    then chunk :: slices width lines
+    else chunk :: slices_split width lines line line_len (pos + width)
   ;;
 end
 
@@ -479,47 +479,100 @@ let simple_list_table ?(index=false)
     in Column.create col (fun ls -> List.nth_exn ls i) ~align) in
   output ~oc ~display ~limit_width_to cols data
 
+let%test_module _ =
+  (module struct
 
-let%test _ =
-  let col1 = Column.create "a" (fun (x, _, _) -> x) in
-  let col2 = Column.create "b" (fun (_, x, _) -> x) in
-  let col3 = Column.create "c" (fun (_, _, x) -> x) in
-  let stringify display =
-    Printf.sprintf "%s\n%!"
-      (to_string ~bars:`Ascii ~display [col1; col2; col3] [("a1", "b1", "c1"); ("a2", "b2", "c2")]) in
-  let s_box = stringify Display.short_box in
-  let s_blank = stringify Display.blank in
-  let s_column_titles = stringify Display.column_titles in
-  s_box = "\
-|--------------|
-| a  | b  | c  |
-|----+----+----|
-| a1 | b1 | c1 |
-| a2 | b2 | c2 |
-|--------------|
+    let col1 = Column.create "a" (fun (x, _, _) -> x)
+    let col2 = Column.create "b" (fun (_, x, _) -> x)
+    let col3 = Column.create "c" (fun (_, _, x) -> x)
 
-" &&
-  s_blank = String.concat ~sep:"\n" [
-"----------------";
-"  a    b    c   ";
-"                ";
-"  a1   b1   c1  ";
-"  a2   b2   c2  ";
-"----------------";
-"";
-""] &&
-  s_column_titles = String.concat ~sep:"\n" [
-"                ";
-"  a    b    c   ";
-" ---- ---- ---- ";
-"  a1   b1   c1  ";
-"  a2   b2   c2  ";
-"                ";
-"";
-""]
+    let%expect_test _ =
+      let stringify display =
+        to_string ~bars:`Ascii ~display [col1; col2; col3]
+          [ ("a1", "b1", "c1")
+          ; ("a2", "b2", "c2")
+          ]
+      in
+      printf "%s" (stringify Display.short_box);
+      [%expect {|
+        |--------------|
+        | a  | b  | c  |
+        |----+----+----|
+        | a1 | b1 | c1 |
+        | a2 | b2 | c2 |
+        |--------------| |}];
+      printf "%s" (stringify Display.blank);
+      [%expect {|
+        ----------------
+          a    b    c
 
+          a1   b1   c1
+          a2   b2   c2
+        ---------------- |}];
+      printf "%s" (stringify Display.column_titles);
+      [%expect {|
+         a    b    c
+        ---- ---- ----
+         a1   b1   c1
+         a2   b2   c2 |}]
+    ;;
 
+    let%expect_test "we keep empty lines if any" =
+      let stringify display =
+        to_string ~bars:`Ascii ~display [col1; col2; col3]
+          [ ("a1", "b_line1\nb_line2\nb_line3", "c_line1\n\nc_line3")
+          ; ("a2", "b2", "c2")
+          ]
+      in
+      printf "%s" (stringify Display.short_box);
+      [%expect {|
+        |------------------------|
+        | a  | b       | c       |
+        |----+---------+---------|
+        | a1 | b_line1 | c_line1 |
+        |    | b_line2 |         |
+        |    | b_line3 | c_line3 |
+        | a2 | b2      | c2      |
+        |------------------------| |}]
+    ;;
 
-(* test for bug where specifying minimum widths on all columns causes a Division_by_zero
-   error while calculating generic_min_chars in Column.layout *)
-let%test _ = const true (to_string [Column.create ~min_width:9 "foo" Fn.id] ["bar"])
+    let%expect_test "trailing newline does not result in an empty line" =
+      let stringify display =
+        to_string ~bars:`Ascii ~display [col1; col2; col3]
+          [ ("a\n", "b\n", "c\n") ]
+      in
+      printf "%s" (stringify Display.short_box);
+      [%expect {|
+        |-----------|
+        | a | b | c |
+        |---+---+---|
+        | a | b | c |
+        |-----------| |}]
+    ;;
+
+    let%expect_test _ =
+      let stringify display =
+        to_string ~bars:`Ascii ~display [col1; col2; col3]
+          [ ("a", "b", "c\n\n\n\n\n\n\nc") ]
+      in
+      printf "%s" (stringify Display.short_box);
+      [%expect {|
+        |-----------|
+        | a | b | c |
+        |---+---+---|
+        | a | b | c |
+        |   |   |   |
+        |   |   |   |
+        |   |   |   |
+        |   |   |   |
+        |   |   |   |
+        |   |   |   |
+        |   |   | c |
+        |-----------| |}]
+    ;;
+
+    (* test for bug where specifying minimum widths on all columns causes a
+       Division_by_zero error while calculating generic_min_chars in Column.layout *)
+    let%test _ = const true (to_string [Column.create ~min_width:9 "foo" Fn.id] ["bar"])
+
+  end)
