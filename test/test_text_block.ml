@@ -180,6 +180,47 @@ let%expect_test _ =
     ma
   |}]
 
+let%expect_test "word wrap" =
+  let width = 30 in
+  let t =
+    text ~max_width:width
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
+       incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis \
+       nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. \
+       Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu \
+       fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in \
+       culpa qui officia deserunt mollit anim id est laborum."
+  in
+  let vline = fill '|' ~width:1 ~height:(height t) in
+  let hline = hcat [text "+"; fill '-' ~width ~height:1; text "+"] in
+  test
+    (vcat [
+       hline;
+       hcat [vline; vcat [hstrut width; t]; vline];
+       hline;
+     ]);
+  [%expect {|
+    +------------------------------+
+    |Lorem ipsum dolor sit amet,   |
+    |consectetur adipiscing elit,  |
+    |sed do eiusmod tempor         |
+    |incididunt ut labore et dolore|
+    |magna aliqua. Ut enim ad minim|
+    |veniam, quis nostrud          |
+    |exercitation ullamco laboris  |
+    |nisi ut aliquip ex ea commodo |
+    |consequat. Duis aute irure    |
+    |dolor in reprehenderit in     |
+    |voluptate velit esse cillum   |
+    |dolore eu fugiat nulla        |
+    |pariatur. Excepteur sint      |
+    |occaecat cupidatat non        |
+    |proident, sunt in culpa qui   |
+    |officia deserunt mollit anim  |
+    |id est laborum.               |
+    +------------------------------+
+  |}]
+
 (* lines with trailing whitespace used to tickle a bug *)
 
 let%expect_test _ =

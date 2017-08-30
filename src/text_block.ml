@@ -139,13 +139,35 @@ let vcat ?(align = `Left) ?sep ts =
       assert (width acc = width t);
       Vcat (acc, t, {width = width acc; height = height acc + height t}))
 
-let text ?(align = `Left) str =
-  if String.mem str '\n' then
-    String.split ~on:'\n' str
-    |> List.map ~f:(fun line -> Text line)
-    |> vcat ~align
-  else
-    Text str
+let text_of_lines lines ~align =
+  lines
+  |> List.map ~f:(fun line -> Text line)
+  |> vcat ~align
+
+let text_no_wrap ~align str =
+  if String.mem str '\n'
+  then String.split ~on:'\n' str |> text_of_lines ~align
+  else Text str
+
+let word_wrap str ~max_width =
+  String.split str ~on:' '
+  |> List.concat_map ~f:(String.split ~on:'\n')
+  |> List.fold ~init:(Fqueue.empty, Fqueue.empty, 0)
+       ~f:(fun (lines, line, len) word ->
+         let n = String.length word in
+         let n' = len + 1 + n in
+         if n' > max_width
+         then (Fqueue.enqueue lines line, Fqueue.singleton word, n)
+         else (lines, Fqueue.enqueue line word, n')
+       )
+  |> (fun (lines, line, _) -> Fqueue.enqueue lines line)
+  |> Fqueue.map ~f:(fun line -> Fqueue.to_list line |> String.concat ~sep:" ")
+  |> Fqueue.to_list
+
+let text ?(align = `Left) ?max_width str =
+  match max_width with
+  | None -> text_no_wrap ~align str
+  | Some max_width -> word_wrap str ~max_width |> text_of_lines ~align
 
 (* an abstract renderer, instantiated once to compute line lengths and then again to
    actually produce a string. *)
@@ -290,4 +312,5 @@ let indent ?(n = 2) t = hcat [hstrut n; t]
 
 let sexp sexp_of_a a = sexp_of_a a |> Sexp.to_string_hum |> text
 
-let textf fmt = ksprintf text fmt
+let textf ?align ?max_width fmt =
+  ksprintf (text ?align ?max_width) fmt

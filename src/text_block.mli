@@ -16,8 +16,14 @@ val space :         width:int -> height:int -> t
 type valign = [`Top | `Bottom | `Center]
 type halign = [`Left | `Right | `Center]
 
-(** a basic block of text, split on newlines and horizontally aligned as specified *)
-val text : ?align:halign -> string -> t
+(** a basic block of text, split on newlines and horizontally aligned as specified.
+
+    If [max_width] is provided, split on whitespace and wrap words to respect the request.
+    So long as no words are longer than [max_width], the resulting text block will be no
+    wider than [max_width]
+*)
+val text  : ?align:halign -> ?max_width:int -> string -> t
+val textf : ?align:halign -> ?max_width:int -> ('r, unit, string, t) format4 -> 'r
 
 (** vertical and horizontal concatenation with alignment *)
 val vcat : ?align:halign -> ?sep:t -> t list -> t
@@ -77,6 +83,3 @@ val indent : ?n:int -> t -> t
 
 (** [sexp sexp_of_a a = sexp_of_a a |> Sexp.to_string |> text] *)
 val sexp : ('a -> Sexp.t) -> 'a -> t
-
-(** variant of [text] that takes a format string *)
-val textf : ('r, unit, string, t) format4 -> 'r
