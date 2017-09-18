@@ -12,6 +12,7 @@ depends: [
   "core"
   "ppx_driver"
   "ppx_jane"
+  "textutils_kernel"
   "jbuilder"                {build & >= "1.0+beta12"}
   "ocaml-migrate-parsetree" {>= "0.4"}
 ]
