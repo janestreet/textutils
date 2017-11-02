@@ -10,8 +10,13 @@ module El = struct (* One element in the table. *)
 
   let create attr str = (attr, String.split_lines str)
   let width (_, lines) = list_max ~f:String.length lines
-  let height width (_, lines) =
-    list_sum lines ~f:(fun s -> max (((String.length s)+(width-1))/(max width 1)) 1)
+  let height width (_, lines) ~display_empty_rows =
+    let height =
+      list_sum lines ~f:(fun s -> max (((String.length s)+(width-1))/(max width 1)) 1)
+    in
+    if display_empty_rows
+    then max height 1
+    else height
   ;;
 
   let rec slices width lines =
@@ -321,7 +326,7 @@ module Grid = struct
     aligns: Align.t list;
   }
 
-  let create ~spacing ~display max_width h_attr cols raw_data =
+  let create ~spacing ~display max_width h_attr cols raw_data ~display_empty_rows =
     let body = List.map raw_data ~f:(fun x -> List.map cols ~f:(Column.make x)) in
     let empty =
       List.fold body ~init:(List.map cols ~f:(fun _ -> true))
@@ -347,7 +352,7 @@ module Grid = struct
       else
         List.map grid_data ~f:(fun row ->
           assert(List.length widths = List.length row);
-          list_max ~f:Fn.id (List.map2_exn widths row ~f:El.height))
+          list_max ~f:Fn.id (List.map2_exn widths row ~f:(El.height ~display_empty_rows)))
     in
     let aligns = List.map cols ~f:(fun c -> c.Column.align) in
     {data = grid_data; heights = heights; widths = widths; aligns=aligns}
@@ -426,30 +431,33 @@ type ('a,'rest) renderer =
   -> ?limit_width_to : int (* defaults to 90 characters *)
   -> ?header_attr : Console.Ansi.attr list
   -> ?bars : [ `Ascii | `Unicode ]
+  -> ?display_empty_rows : bool (* Default: false *)
   -> 'a Column.t list
   -> 'a list
   -> 'rest
 
 let output ?(display=Display.short_box) ?(spacing=1) ?(limit_width_to=90)
-    ?(header_attr=[]) ?(bars=`Unicode) cols data ~oc =
+    ?(header_attr=[]) ?(bars=`Unicode) ?(display_empty_rows=false) cols data ~oc =
   if cols = [] then
     ()
   else
     let screen =
-      Grid.draw ~spacing ~display
-        (Grid.create ~spacing ~display limit_width_to header_attr cols data)
+      Grid.create ~spacing ~display limit_width_to header_attr cols data
+        ~display_empty_rows
+      |> Grid.draw ~spacing ~display
     in
     Draw.output ~oc ~screen ~bars
 ;;
 
 let to_string_gen ?(display=Display.short_box) ?(spacing=1) ?(limit_width_to=90)
-    ?(header_attr=[]) ?(bars=`Unicode) cols data ~use_attr =
+    ?(header_attr=[]) ?(bars=`Unicode) ?(display_empty_rows=false) cols data ~use_attr =
   if cols = [] then
     ""
   else
     let screen =
-      Grid.draw ~spacing ~display
-        (Grid.create ~spacing ~display limit_width_to header_attr cols data)
+      Grid.create ~spacing ~display limit_width_to header_attr cols data
+        ~display_empty_rows
+      |> Grid.draw ~spacing ~display
     in
     if use_attr then
       Draw.to_string ~screen ~bars
@@ -460,7 +468,6 @@ let to_string_gen ?(display=Display.short_box) ?(spacing=1) ?(limit_width_to=90)
 
 let to_string_noattr = to_string_gen ~use_attr:false
 let to_string        = to_string_gen ~use_attr:true
-
 
 let simple_list_table ?(index=false)
     ?(limit_width_to=160)
@@ -569,6 +576,35 @@ let%test_module _ =
         |   |   |   |
         |   |   | c |
         |-----------| |}]
+    ;;
+
+    let%expect_test _ =
+      List.iter [ true; false ] ~f:(fun display_empty_rows ->
+        printf "display empty rows = %b\n" display_empty_rows;
+        to_string ~bars:`Ascii [col1; col2; col3] ~display_empty_rows
+          [ "a", "b", "c"
+          ; "", "", ""
+          ; "d", "e", "f"
+          ]
+        |> printf "%s\n";
+      );
+      [%expect {|
+        display empty rows = true
+        |-----------|
+        | a | b | c |
+        |---+---+---|
+        | a | b | c |
+        |   |   |   |
+        | d | e | f |
+        |-----------|
+
+        display empty rows = false
+        |-----------|
+        | a | b | c |
+        |---+---+---|
+        | a | b | c |
+        | d | e | f |
+        |-----------| |}];
     ;;
 
     (* test for bug where specifying minimum widths on all columns causes a

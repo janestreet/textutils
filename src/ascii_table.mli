@@ -47,6 +47,7 @@ type ('row, 'rest) renderer =
   -> ?limit_width_to : int (* defaults to 90 characters *)
   -> ?header_attr : Console.Ansi.attr list
   -> ?bars : [ `Ascii | `Unicode ] (* defaults to [`Unicode] *)
+  -> ?display_empty_rows : bool (* Default: false *)
   -> 'row Column.t list
   -> 'row list
   -> 'rest
