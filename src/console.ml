@@ -118,7 +118,13 @@ module Ansi = struct
       Out_channel.output oc ~buf:s ~pos:start ~len
 
   let output_string (style:attr list) oc s =
-    output style oc s 0 (String.length s)
+    if Lazy.force capable && style <> [] then begin
+      Out_channel.output_string oc (Attr.list_to_string (style :> Attr.t list));
+      Out_channel.output_string oc s;
+      Out_channel.output_string oc (Attr.list_to_string [`Reset]);
+      Out_channel.flush oc
+    end else
+      Out_channel.output_string oc s
 
   let fprintf (style:attr list) channel fmt =
     if Lazy.force capable && style <> [] then

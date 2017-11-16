@@ -33,7 +33,7 @@ module Ansi : sig
   val eprintf : attr list -> ('a, Out_channel.t, unit) format -> 'a
 
   val output_string : attr list -> Out_channel.t -> string -> unit
-  val output : attr list -> Out_channel.t -> string -> int -> int -> unit
+  val output : attr list -> Out_channel.t -> Bytes.t -> int -> int -> unit
 
   (* Create string with embedded formatting codes *)
   val string_with_attr : attr list -> string -> string
