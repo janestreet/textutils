@@ -1,3 +1,8 @@
+## v0.10
+
+- Added library `Textutils_kernel`, created by splitting out the
+  platform-independent code from the `Textutils` library.
+
 ## 113.24.00
 
 - Switched to PPX.
