@@ -1,8 +1,0 @@
-(library
- ((name textutils)
-  (public_name textutils)
-  (libraries (core textutils_kernel))
-  (preprocess (pps (ppx_jane ppxlib.runner)))))
-
-
-(jbuild_version 1)

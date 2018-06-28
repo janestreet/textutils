@@ -1,0 +1,7 @@
+(library
+ ((name ascii_table)
+  (libraries (console
+              core))
+  (preprocess (pps (ppx_jane ppxlib.runner)))))
+
+(jbuild_version 1)

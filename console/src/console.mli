@@ -10,23 +10,23 @@ module Ansi : sig
   val unsave_cursor : unit -> unit
 
   type color = [
-  | `Black
-  | `Red
-  | `Green
-  | `Yellow
-  | `Blue
-  | `Magenta
-  | `Cyan
-  | `White
+    | `Black
+    | `Red
+    | `Green
+    | `Yellow
+    | `Blue
+    | `Magenta
+    | `Cyan
+    | `White
   ]
 
   type attr = [
-  | `Bright
-  | `Dim
-  | `Underscore
-  | `Reverse
-  | color
-  | `Bg of color
+    | `Bright
+    | `Dim
+    | `Underscore
+    | `Reverse
+    | color
+    | `Bg of color
   ]
 
   val printf  : attr list -> ('a, Out_channel.t, unit) format -> 'a

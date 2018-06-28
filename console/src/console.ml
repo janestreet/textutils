@@ -13,36 +13,36 @@ module Ansi = struct
 
   (* if it's good enough for git then it's good enough for us... *)
   let capable = lazy (Unix.isatty Unix.stdout &&
-                             match Sys.getenv "TERM" with
-                             | Some "dumb"
-                             | None -> false
-                             | Some _ -> true)
+                      match Sys.getenv "TERM" with
+                      | Some "dumb"
+                      | None -> false
+                      | Some _ -> true)
 
   module Attr = struct
     type color = [
-    | `Black
-    | `Red
-    | `Green
-    | `Yellow
-    | `Blue
-    | `Magenta
-    | `Cyan
-    | `White
+      | `Black
+      | `Red
+      | `Green
+      | `Yellow
+      | `Blue
+      | `Magenta
+      | `Cyan
+      | `White
     ]
 
     type attr = [
-    | `Reset
-    | `Bright
-    | `Dim
-    | `Underscore
-    | `Blink
-    | `Reverse
-    | `Hidden
+      | `Reset
+      | `Bright
+      | `Dim
+      | `Underscore
+      | `Blink
+      | `Reverse
+      | `Hidden
     ]
     type t = [
-    | attr
-    | color
-    | `Bg of color
+      | attr
+      | color
+      | `Bg of color
     ]
 
     let attr_to_int : attr -> int = function
@@ -82,20 +82,20 @@ module Ansi = struct
     let list_to_string : t list -> string = function
       | [] -> ""
       | l -> Printf.sprintf "\027[%sm"
-          (String.concat ~sep:";"
-             (List.map l
-                ~f:(fun att -> string_of_int (to_int att))))
+               (String.concat ~sep:";"
+                  (List.map l
+                     ~f:(fun att -> string_of_int (to_int att))))
   end
 
   type color = Attr.color
 
   type attr = [
-  | `Bright
-  | `Dim
-  | `Underscore
-  | `Reverse
-  | color
-  | `Bg of color
+    | `Bright
+    | `Dim
+    | `Underscore
+    | `Reverse
+    | color
+    | `Bg of color
   ]
 
   let string_with_attr style string =
@@ -145,10 +145,10 @@ end
 let is_color_tty () = Lazy.force Ansi.capable
 
 module Columnize
-  (In:sig
-     type t
-     val length : t -> int
-   end) :
+    (In:sig
+       type t
+       val length : t -> int
+     end) :
 sig
   val iter : middle:(sep:In.t -> In.t -> int -> unit)
     -> last:(In.t -> int -> unit)
@@ -157,7 +157,7 @@ sig
     -> int
     -> unit
 end
-  =
+=
 struct
   let lines columns a = (Array.length a - 1) / columns + 1
 
@@ -185,8 +185,8 @@ struct
     let rec loop lines cols cnt =
       let (nlines,ncols) = dim (cnt+1) a in
       if nlines > lines || lines = 1 (** we are not gaining in vertical space
-                                        anymore *)
-        || line_len ~sep_len 0 ncols > max_len (** we are overflowing *)
+                                         anymore *)
+         || line_len ~sep_len 0 ncols > max_len (** we are overflowing *)
       then
         Array.of_list cols
       else
@@ -212,10 +212,10 @@ struct
   let rec fold_line ~middle ~last sep acc padding line =
     match line,padding with
     | [v],len::_     ->
-        last ~acc v (len - In.length v)
+      last ~acc v (len - In.length v)
     | h::t,len::tlen ->
-        fold_line ~middle ~last sep
-          (middle ~acc ~sep h (len - In.length h)) tlen t
+      fold_line ~middle ~last sep
+        (middle ~acc ~sep h (len - In.length h)) tlen t
     | _              -> assert false
 
   let fold ~init ~middle ~last ~sep l max_len =
@@ -227,7 +227,7 @@ struct
       let res = columnize a (Array.length columns) in
       List.fold_left res
         ~f:(fun acc line ->
-              fold_line ~middle ~last sep acc (Array.to_list columns) line)
+          fold_line ~middle ~last sep acc (Array.to_list columns) line)
         ~init
 
   let iter ~middle ~last =
@@ -244,22 +244,22 @@ let width () =
 let print_list oc l =
   match (width () :> [ `Cols of int | `Not_a_tty | `Not_available ]) with
   | `Not_a_tty | `Not_available ->
-      List.iter l ~f:(fun (s,_) -> print_endline s)
+    List.iter l ~f:(fun (s,_) -> print_endline s)
   | `Cols cols ->
-      let print_styled (s,style) =
-        Ansi.output_string style oc s
-      in
-      let sep = "  ",[] in
-      let last v _ = print_styled v; Out_channel.output_string oc "\n"
-      and middle ~sep v pad_len =
-        print_styled v;
-        Out_channel.output_string oc (String.make pad_len ' ');
-        print_styled sep
-      in
-      let module Col = Columnize
-        (struct
-           type t = string * Ansi.attr list
-           let length (s,_) = String.length s
-         end)
-      in
-      Col.iter ~sep ~last ~middle l cols
+    let print_styled (s,style) =
+      Ansi.output_string style oc s
+    in
+    let sep = "  ",[] in
+    let last v _ = print_styled v; Out_channel.output_string oc "\n"
+    and middle ~sep v pad_len =
+      print_styled v;
+      Out_channel.output_string oc (String.make pad_len ' ');
+      print_styled sep
+    in
+    let module Col = Columnize
+                       (struct
+                         type t = string * Ansi.attr list
+                         let length (s,_) = String.length s
+                       end)
+    in
+    Col.iter ~sep ~last ~middle l cols

@@ -1,5 +1,13 @@
 open! Core
 
+module Color : sig
+  type t = Console.Ansi.color
+end
+
+module Attr : sig
+  type t = Console.Ansi.attr
+end
+
 module Align : sig
   type t =
     | Left
@@ -37,7 +45,7 @@ module Column : sig
     -> ?max_width : int
     -> ?show : [ `Yes | `No | `If_not_empty ] (* Default: `Yes *)
     -> string
-    -> ('a -> Console.Ansi.attr list * string)
+    -> ('a -> Attr.t list * string)
     -> 'a t
 end
 
@@ -45,7 +53,7 @@ type ('row, 'rest) renderer =
   ?display : Display.t (* Default: short_box *)
   -> ?spacing : int (* Default: 1 *)
   -> ?limit_width_to : int (* defaults to 90 characters *)
-  -> ?header_attr : Console.Ansi.attr list
+  -> ?header_attr : Attr.t list
   -> ?bars : [ `Ascii | `Unicode ] (* defaults to [`Unicode] *)
   -> ?display_empty_rows : bool (* Default: false *)
   -> 'row Column.t list

@@ -1,10 +1,18 @@
 open Core
 
+module Color = struct
+  type t = Console.Ansi.color
+end
+
+module Attr = struct
+  type t = Console.Ansi.attr
+end
+
 let list_sum ~f lst = List.fold lst ~init:0 ~f:(fun a b -> a + (f b))
 let list_max ~f lst = List.fold lst ~init:0 ~f:(fun a b -> max a (f b))
 
 module El = struct (* One element in the table. *)
-  type t = Console.Ansi.attr list * string list
+  type t = Attr.t list * string list
   type row = t list
   type grid = row list
 
@@ -61,7 +69,7 @@ module Column = struct
   exception Impossible_table_constraints of constraints [@@deriving sexp]
 
   let create_attr ?(align=Align.Left) ?min_width ?(max_width=90) ?(show=`Yes)
-      str parse_func = {
+        str parse_func = {
     max_text_width = max_width+1;
     header = str;
     col_func = (fun x -> match parse_func x with (a, b) -> El.create a b);
@@ -72,7 +80,7 @@ module Column = struct
   };;
 
   let create ?(align=Align.Left) ?min_width ?(max_width=90) ?show
-      str parse_func =
+        str parse_func =
     create_attr ?min_width ~align ~max_width ?show str
       (fun x -> [], (parse_func x))
   ;;
@@ -180,9 +188,9 @@ end
 
 module Draw = struct
   type point =
-  | Line
-  | Blank
-  | Char of Console.Ansi.attr list * char
+    | Line
+    | Blank
+    | Char of Attr.t list * char
 
   type screen = {
     data : point array array;
@@ -305,11 +313,11 @@ end
 
 module Display = struct
   type t =
-  | Short_box
-  | Tall_box
-  | Line
-  | Blank
-  | Column_titles
+    | Short_box
+    | Tall_box
+    | Line
+    | Blank
+    | Column_titles
 
   let short_box = Short_box
   let tall_box = Tall_box
@@ -380,7 +388,7 @@ module Grid = struct
           let col = col + 1 + width + spacing * 2 in
           Draw.vline ~screen ~col ~row1:0 ~row2:(rows - 1) ~point ();
           col)
-          : int
+        : int
       );
     end;
     ignore (
@@ -406,10 +414,10 @@ module Grid = struct
                   List.fold strings ~init:row ~f:(fun row string ->
                     Draw.aligned ~screen ~row ~col ~attr ~string ~align ~width;
                     row + 1)
-                    : int
+                  : int
                 );
               col + 1 + spacing * 2 + width)
-            : int
+          : int
         );
         let row = row + height in
 
@@ -419,7 +427,7 @@ module Grid = struct
           row + 1
         end else
           row)
-        : int
+      : int
     );
     screen
   ;;
@@ -429,7 +437,7 @@ type ('a,'rest) renderer =
   ?display : Display.t (* Default: short_box *)
   -> ?spacing : int (* Default: 1 *)
   -> ?limit_width_to : int (* defaults to 90 characters *)
-  -> ?header_attr : Console.Ansi.attr list
+  -> ?header_attr : Attr.t list
   -> ?bars : [ `Ascii | `Unicode ]
   -> ?display_empty_rows : bool (* Default: false *)
   -> 'a Column.t list
@@ -437,7 +445,7 @@ type ('a,'rest) renderer =
   -> 'rest
 
 let output ?(display=Display.short_box) ?(spacing=1) ?(limit_width_to=90)
-    ?(header_attr=[]) ?(bars=`Unicode) ?(display_empty_rows=false) cols data ~oc =
+      ?(header_attr=[]) ?(bars=`Unicode) ?(display_empty_rows=false) cols data ~oc =
   if cols = [] then
     ()
   else
@@ -450,7 +458,7 @@ let output ?(display=Display.short_box) ?(spacing=1) ?(limit_width_to=90)
 ;;
 
 let to_string_gen ?(display=Display.short_box) ?(spacing=1) ?(limit_width_to=90)
-    ?(header_attr=[]) ?(bars=`Unicode) ?(display_empty_rows=false) cols data ~use_attr =
+      ?(header_attr=[]) ?(bars=`Unicode) ?(display_empty_rows=false) cols data ~use_attr =
   if cols = [] then
     ""
   else
@@ -470,10 +478,10 @@ let to_string_noattr = to_string_gen ~use_attr:false
 let to_string        = to_string_gen ~use_attr:true
 
 let simple_list_table ?(index=false)
-    ?(limit_width_to=160)
-    ?(oc=stdout)
-    ?(display=Display.line)
-    cols data =
+      ?(limit_width_to=160)
+      ?(oc=stdout)
+      ?(display=Display.line)
+      cols data =
   let cols, data =
     if index
     then "#" :: cols, List.mapi data ~f:(fun i row -> Int.to_string (i+1) :: row)
