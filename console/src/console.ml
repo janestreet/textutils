@@ -239,7 +239,7 @@ let width () =
   match Linux_ext.get_terminal_size with
   | Result.Error _ -> `Not_available
   | Result.Ok _ when not (Unix.isatty Unix.stdout) -> `Not_a_tty
-  | Result.Ok get_size -> `Cols (snd (get_size ()))
+  | Result.Ok get_size -> `Cols (snd (get_size `Controlling))
 
 let print_list oc l =
   match (width () :> [ `Cols of int | `Not_a_tty | `Not_available ]) with
