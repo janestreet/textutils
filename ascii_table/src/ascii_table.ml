@@ -263,7 +263,7 @@ module Draw = struct
     let buf = Buffer.create 1024 in
     let current_attr = ref [] in
     let update_attr attr =
-      let attr = List.sort ~compare:Pervasives.compare attr in
+      let attr = List.sort ~compare:Poly.compare attr in
       if attr <> !current_attr then begin
         if Buffer.length buf > 0 then output !current_attr buf;
         current_attr := attr;

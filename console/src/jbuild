@@ -1,7 +1,0 @@
-(library
- ((name console)
-  (public_name textutils.console)
-  (preprocess (pps (ppx_jane -dont-check-doc-comments-attachment ppxlib.runner)))
-  (libraries (core))))
-
-(jbuild_version 1)
