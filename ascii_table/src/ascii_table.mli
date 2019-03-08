@@ -47,6 +47,9 @@ module Column : sig
     -> string
     -> ('a -> Attr.t list * string)
     -> 'a t
+
+  val header  : 'a t ->                                string
+  val to_data : 'a t -> 'a -> Console.Ansi.attr list * string list
 end
 
 type ('row, 'rest) renderer =

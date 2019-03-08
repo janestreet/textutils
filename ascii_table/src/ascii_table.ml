@@ -62,6 +62,9 @@ module Column = struct
     show : show;
   }
 
+  let header t = t.header
+  let to_data t = t.col_func
+
   type constraints = {
     total_width : int;
     min_widths : (string * int) list;
