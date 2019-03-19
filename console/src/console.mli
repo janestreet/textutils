@@ -9,42 +9,39 @@ module Ansi : sig
   val save_cursor : unit -> unit
   val unsave_cursor : unit -> unit
 
-  type color = [
-    | `Black
+  type color =
+    [ `Black
     | `Red
     | `Green
     | `Yellow
     | `Blue
     | `Magenta
     | `Cyan
-    | `White
-  ]
+    | `White ]
 
-  type attr = [
-    | `Bright
+  type attr =
+    [ `Bright
     | `Dim
     | `Underscore
     | `Reverse
     | color
-    | `Bg of color
-  ]
+    | `Bg of color ]
 
-  val printf  : attr list -> ('a, Out_channel.t, unit) format -> 'a
+  val printf : attr list -> ('a, Out_channel.t, unit) format -> 'a
   val eprintf : attr list -> ('a, Out_channel.t, unit) format -> 'a
-
   val output_string : attr list -> Out_channel.t -> string -> unit
   val output : attr list -> Out_channel.t -> Bytes.t -> int -> int -> unit
 
   (* Create string with embedded formatting codes *)
-  val string_with_attr : attr list -> string -> string
 
+  val string_with_attr : attr list -> string -> string
 end
 
 val is_color_tty : unit -> bool
 
 (** The width in characters of the current output. Returns [`Not_a_tty] if
     stdout is not connected to a tty.*)
-val width : unit -> [ `Cols of int | `Not_a_tty | `Not_available ]
+val width : unit -> [`Cols of int | `Not_a_tty | `Not_available]
 
 (** print a list in a columnize way (like the output of ls) *)
 val print_list : Out_channel.t -> (string * Ansi.attr list) list -> unit
