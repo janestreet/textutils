@@ -2,6 +2,8 @@
 (** Color printing in terminals  *)
 open Core
 
+open Poly
+
 (* http://www.termsys.demon.co.uk/vtansi.htm *)
 module Ansi = struct
   let kill_line () = print_string "\027[2K"

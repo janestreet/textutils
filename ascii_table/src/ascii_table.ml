@@ -1,4 +1,5 @@
 open Core
+open Poly
 
 module Color = struct
   type t = Console.Ansi.color
