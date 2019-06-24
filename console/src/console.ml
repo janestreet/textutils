@@ -18,8 +18,7 @@ module Ansi = struct
       (Unix.isatty Unix.stdout
        &&
        match Sys.getenv "TERM" with
-       | Some "dumb"
-       | None -> false
+       | Some "dumb" | None -> false
        | Some _ -> true)
   ;;
 
@@ -32,7 +31,8 @@ module Ansi = struct
       | `Blue
       | `Magenta
       | `Cyan
-      | `White ]
+      | `White
+      ]
 
     type attr =
       [ `Reset
@@ -41,12 +41,14 @@ module Ansi = struct
       | `Underscore
       | `Blink
       | `Reverse
-      | `Hidden ]
+      | `Hidden
+      ]
 
     type t =
       [ attr
       | color
-      | `Bg of color ]
+      | `Bg of color
+      ]
 
     let attr_to_int : attr -> int = function
       | `Reset -> 0
@@ -103,7 +105,8 @@ module Ansi = struct
     | `Underscore
     | `Reverse
     | color
-    | `Bg of color ]
+    | `Bg of color
+    ]
 
   let string_with_attr style string =
     if style = []
@@ -246,13 +249,12 @@ end
 let width () =
   match Linux_ext.get_terminal_size with
   | Result.Error _ -> `Not_available
-  | Result.Ok _
-    when not (Unix.isatty Unix.stdout) -> `Not_a_tty
+  | Result.Ok _ when not (Unix.isatty Unix.stdout) -> `Not_a_tty
   | Result.Ok get_size -> `Cols (snd (get_size `Controlling))
 ;;
 
 let print_list oc l =
-  match (width () :> [`Cols of int | `Not_a_tty | `Not_available]) with
+  match (width () :> [ `Cols of int | `Not_a_tty | `Not_available ]) with
   | `Not_a_tty | `Not_available -> List.iter l ~f:(fun (s, _) -> print_endline s)
   | `Cols cols ->
     let print_styled (s, style) = Ansi.output_string style oc s in
@@ -265,11 +267,12 @@ let print_list oc l =
       Out_channel.output_string oc (String.make pad_len ' ');
       print_styled sep
     in
-    let module Col = Columnize (struct
-                       type t = string * Ansi.attr list
+    let module Col =
+      Columnize (struct
+        type t = string * Ansi.attr list
 
-                       let length (s, _) = String.length s
-                     end)
+        let length (s, _) = String.length s
+      end)
     in
     Col.iter ~sep ~last ~middle l cols
 ;;

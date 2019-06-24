@@ -42,7 +42,7 @@ module Column : sig
     :  ?align:Align.t (* Default: left *)
     -> ?min_width:int
     -> ?max_width:int
-    -> ?show:[`Yes | `No | `If_not_empty] (* Default: `Yes *)
+    -> ?show:[ `Yes | `No | `If_not_empty ] (* Default: `Yes *)
     -> string
     -> ('a -> string)
     -> 'a t
@@ -53,7 +53,7 @@ module Column : sig
     :  ?align:Align.t (* Default: left *)
     -> ?min_width:int
     -> ?max_width:int
-    -> ?show:[`Yes | `No | `If_not_empty] (* Default: `Yes *)
+    -> ?show:[ `Yes | `No | `If_not_empty ] (* Default: `Yes *)
     -> string
     -> ('a -> Attr.t list * string)
     -> 'a t
@@ -67,7 +67,7 @@ type ('row, 'rest) renderer =
   -> ?spacing:int (* Default: 1 *)
   -> ?limit_width_to:int (* defaults to 90 characters *)
   -> ?header_attr:Attr.t list
-  -> ?bars:[`Ascii | `Unicode] (* defaults to [`Unicode] *)
+  -> ?bars:[ `Ascii | `Unicode ] (* defaults to [`Unicode] *)
   -> ?display_empty_rows:bool (* Default: false *)
   -> 'row Column.t list
   -> 'row list

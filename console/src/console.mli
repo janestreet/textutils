@@ -17,7 +17,8 @@ module Ansi : sig
     | `Blue
     | `Magenta
     | `Cyan
-    | `White ]
+    | `White
+    ]
 
   type attr =
     [ `Bright
@@ -25,7 +26,8 @@ module Ansi : sig
     | `Underscore
     | `Reverse
     | color
-    | `Bg of color ]
+    | `Bg of color
+    ]
 
   val printf : attr list -> ('a, Out_channel.t, unit) format -> 'a
   val eprintf : attr list -> ('a, Out_channel.t, unit) format -> 'a
@@ -41,7 +43,7 @@ val is_color_tty : unit -> bool
 
 (** The width in characters of the current output. Returns [`Not_a_tty] if
     stdout is not connected to a tty.*)
-val width : unit -> [`Cols of int | `Not_a_tty | `Not_available]
+val width : unit -> [ `Cols of int | `Not_a_tty | `Not_available ]
 
 (** print a list in a columnize way (like the output of ls) *)
 val print_list : Out_channel.t -> (string * Ansi.attr list) list -> unit

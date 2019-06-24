@@ -53,7 +53,8 @@ end
 type show =
   [ `Yes
   | `No
-  | `If_not_empty ]
+  | `If_not_empty
+  ]
 
 module Column = struct
   type 'a t =
@@ -410,48 +411,48 @@ module Grid = struct
     then (
       Draw.vline ~screen ~col:0 ~row1:0 ~row2:(rows - 1) ~point ();
       ignore
-        ( List.fold t.widths ~init:0 ~f:(fun col width ->
-            let col = col + 1 + width + (spacing * 2) in
-            Draw.vline ~screen ~col ~row1:0 ~row2:(rows - 1) ~point ();
-            col)
-          : int ));
+        (List.fold t.widths ~init:0 ~f:(fun col width ->
+           let col = col + 1 + width + (spacing * 2) in
+           Draw.vline ~screen ~col ~row1:0 ~row2:(rows - 1) ~point ();
+           col)
+         : int));
     ignore
-      ( List.fold2_exn t.data t.heights ~init:1 ~f:(fun row row_elements height ->
-          let header_row = row = 1 in
-          ignore
-            ( List.fold2_exn
-                row_elements
-                (List.zip_exn t.widths t.aligns)
-                ~init:(1 + spacing)
-                ~f:(fun col (attr, lines) (width, align) ->
-                  let strings = El.slices width lines in
-                  if display = Display.Line
-                  then (
-                    match strings with
-                    | [] -> ()
-                    | [ string ] ->
-                      Draw.aligned ~screen ~row ~col ~attr ~string ~align ~width
-                    | string :: _ ->
-                      Draw.aligned ~screen ~row ~col ~attr ~string ~align ~width;
-                      for col = col + max 0 (width - 3) to col + width - 1 do
-                        Draw.char ~screen ~row ~col ~char:'.' ~attr:[]
-                      done)
-                  else
-                    ignore
-                      ( List.fold strings ~init:row ~f:(fun row string ->
-                          Draw.aligned ~screen ~row ~col ~attr ~string ~align ~width;
-                          row + 1)
-                        : int );
-                  col + 1 + (spacing * 2) + width)
-              : int );
-          let row = row + height in
-          if display = Display.Tall_box || header_row
-          then (
-            if display <> Display.Blank
-            then Draw.hline ~screen ~row ~col1:0 ~col2:(cols - 1) ();
-            row + 1)
-          else row)
-        : int );
+      (List.fold2_exn t.data t.heights ~init:1 ~f:(fun row row_elements height ->
+         let header_row = row = 1 in
+         ignore
+           (List.fold2_exn
+              row_elements
+              (List.zip_exn t.widths t.aligns)
+              ~init:(1 + spacing)
+              ~f:(fun col (attr, lines) (width, align) ->
+                let strings = El.slices width lines in
+                if display = Display.Line
+                then (
+                  match strings with
+                  | [] -> ()
+                  | [ string ] ->
+                    Draw.aligned ~screen ~row ~col ~attr ~string ~align ~width
+                  | string :: _ ->
+                    Draw.aligned ~screen ~row ~col ~attr ~string ~align ~width;
+                    for col = col + max 0 (width - 3) to col + width - 1 do
+                      Draw.char ~screen ~row ~col ~char:'.' ~attr:[]
+                    done)
+                else
+                  ignore
+                    (List.fold strings ~init:row ~f:(fun row string ->
+                       Draw.aligned ~screen ~row ~col ~attr ~string ~align ~width;
+                       row + 1)
+                     : int);
+                col + 1 + (spacing * 2) + width)
+            : int);
+         let row = row + height in
+         if display = Display.Tall_box || header_row
+         then (
+           if display <> Display.Blank
+           then Draw.hline ~screen ~row ~col1:0 ~col2:(cols - 1) ();
+           row + 1)
+         else row)
+       : int);
     screen
   ;;
 end
@@ -461,7 +462,7 @@ type ('a, 'rest) renderer =
   -> ?spacing:int (* Default: 1 *)
   -> ?limit_width_to:int (* defaults to 90 characters *)
   -> ?header_attr:Attr.t list
-  -> ?bars:[`Ascii | `Unicode]
+  -> ?bars:[ `Ascii | `Unicode ]
   -> ?display_empty_rows:bool (* Default: false *)
   -> 'a Column.t list
   -> 'a list
