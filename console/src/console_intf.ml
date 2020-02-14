@@ -13,7 +13,7 @@ module type Io = sig
   val stdout : out_channel
   val flush : out_channel -> unit t
   val print_string : string -> unit
-  val fprintf : attrs:string -> out_channel -> 'a fmt -> 'a t
+  val fprintf : attrs:string -> out_channel -> 'a fmt -> 'a
   val fold_left : 'a List.t -> init:'b -> f:('b -> 'a -> 'b t) -> 'b t
   val stdout_isatty : unit -> bool t
   val capable : unit -> bool t
@@ -59,8 +59,8 @@ module type S = sig
       | `Bg of color
       ]
 
-    val printf : attr list -> 'a io_fmt -> 'a io
-    val eprintf : attr list -> 'a io_fmt -> 'a io
+    val printf : attr list -> 'a io_fmt -> 'a
+    val eprintf : attr list -> 'a io_fmt -> 'a
     val output_string : attr list -> out_channel -> string -> unit io
     val output : attr list -> out_channel -> Bytes.t -> int -> int -> unit io
 
