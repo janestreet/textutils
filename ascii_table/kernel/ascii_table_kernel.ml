@@ -1,30 +1,8 @@
 open Core_kernel
-open Poly
+include Ascii_table_kernel_intf
 
 let list_sum ~f lst = List.fold lst ~init:0 ~f:(fun a b -> a + f b)
 let list_max ~f lst = List.fold lst ~init:0 ~f:(fun a b -> max a (f b))
-
-module Attr = struct
-  type color =
-    [ `Black
-    | `Red
-    | `Green
-    | `Yellow
-    | `Blue
-    | `Magenta
-    | `Cyan
-    | `White
-    ]
-
-  type t =
-    [ `Bright
-    | `Dim
-    | `Underscore
-    | `Reverse
-    | color
-    | `Bg of color
-    ]
-end
 
 module El = struct
   (* One element in the table. *)
@@ -57,13 +35,6 @@ module El = struct
   ;;
 end
 
-module Align = struct
-  type t =
-    | Left
-    | Right
-    | Center
-end
-
 type show =
   [ `Yes
   | `No
@@ -72,7 +43,7 @@ type show =
 
 module Column = struct
   type 'a t =
-    { max_text_width : int
+    { max_width : int
     ; header : string
     ; col_func : 'a -> El.t
     ; align : Align.t
@@ -99,7 +70,7 @@ module Column = struct
         str
         parse_func
     =
-    { max_text_width = max_width + 1
+    { max_width
     ; header = str
     ; col_func =
         (fun x ->
@@ -127,7 +98,7 @@ module Column = struct
     1
     + (2 * spacing)
     + min
-        (t.max_text_width - (1 + (2 * spacing)))
+        (t.max_width - (2 * spacing))
         (max header_width (list_max column_data ~f:El.width))
   ;;
 
@@ -190,6 +161,70 @@ module Column = struct
        on either side. *)
     List.map ~f:(fun x -> x - (1 + (spacing * 2))) (decide_widths desired_widths)
   ;;
+
+  module Of_field = struct
+    let field ?align ?min_width ?max_width ?show ?header to_string record_field =
+      create
+        ?align
+        ?min_width
+        ?max_width
+        ?show
+        (Option.value header ~default:(Field.name record_field))
+        (fun record -> to_string (Field.get record_field record))
+    ;;
+
+    let field_attr
+          ?align
+          ?min_width
+          ?max_width
+          ?show
+          ?header
+          to_string_and_attr
+          record_field
+      =
+      create_attr
+        ?align
+        ?min_width
+        ?max_width
+        ?show
+        (Option.value header ~default:(Field.name record_field))
+        (fun record -> to_string_and_attr (Field.get record_field record))
+    ;;
+
+    let field_opt ?align ?min_width ?max_width ?show ?header to_string record_field =
+      field
+        ?align
+        ?min_width
+        ?max_width
+        ?show
+        ?header
+        (function
+          | None -> ""
+          | Some x -> to_string x)
+        record_field
+    ;;
+
+    let field_opt_attr
+          ?align
+          ?min_width
+          ?max_width
+          ?show
+          ?header
+          to_string_and_attr
+          record_field
+      =
+      field_attr
+        ?align
+        ?min_width
+        ?max_width
+        ?show
+        ?header
+        (function
+          | None -> [], ""
+          | Some x -> to_string_and_attr x)
+        record_field
+    ;;
+  end
 end
 
 module Table_char = struct
@@ -230,12 +265,14 @@ module Screen = struct
     | Line
     | Blank
     | Char of Attr.t list * char
+  [@@deriving compare, sexp_of]
 
   type t =
     { data : point array array
     ; rows : int
     ; cols : int
     }
+  [@@deriving compare, sexp_of]
 
   let create ~rows ~cols =
     let data = Array.make_matrix ~dimx:rows ~dimy:cols (Char ([], ' ')) in
@@ -284,10 +321,14 @@ module Screen = struct
   ;;
 
   let get_symbol t ~row ~col =
-    let top = row > 0 && t.data.(row - 1).(col) = Line in
-    let bottom = row < t.rows - 1 && t.data.(row + 1).(col) = Line in
-    let left = col > 0 && t.data.(row).(col - 1) = Line in
-    let right = col < t.cols - 1 && t.data.(row).(col + 1) = Line in
+    let top = row > 0 && [%compare.equal: point] t.data.(row - 1).(col) Line in
+    let bottom =
+      row < t.rows - 1 && [%compare.equal: point] t.data.(row + 1).(col) Line
+    in
+    let left = col > 0 && [%compare.equal: point] t.data.(row).(col - 1) Line in
+    let right =
+      col < t.cols - 1 && [%compare.equal: point] t.data.(row).(col + 1) Line
+    in
     Table_char.connect
       ?top:(Option.some_if top ())
       ?bottom:(Option.some_if bottom ())
@@ -300,8 +341,8 @@ module Screen = struct
     let buf = Buffer.create 1024 in
     let current_attr = ref [] in
     let update_attr attr =
-      let attr = List.sort ~compare:Poly.compare attr in
-      if attr <> !current_attr
+      let attr = List.sort ~compare:[%compare: Attr.t] attr in
+      if not ([%compare.equal: Attr.t list] attr !current_attr)
       then (
         if Buffer.length buf > 0 then output !current_attr buf;
         current_attr := attr)
@@ -346,6 +387,7 @@ module Display = struct
     | Line
     | Blank
     | Column_titles
+  [@@deriving compare, sexp_of]
 
   let short_box = Short_box
   let tall_box = Tall_box
@@ -387,7 +429,7 @@ module Grid = struct
     let widths = Column.layout ~spacing (max_width - 1) cols raw_data in
     let grid_data = List.map cols ~f:(Column.header_to_el h_attr) :: body in
     let heights =
-      if display = Display.Line
+      if [%compare.equal: Display.t] display Line
       then List.map grid_data ~f:(fun _ -> 1)
       else
         List.map grid_data ~f:(fun row ->
@@ -402,16 +444,20 @@ module Grid = struct
 
   let draw ~spacing ~display t =
     assert (List.length t.data = List.length t.heights);
-    let mid_row = if display = Display.Tall_box then 1 else 0 in
+    let mid_row = if [%compare.equal: Display.t] display Tall_box then 1 else 0 in
     (* The total width of the table includes the '|'s to the left of elements, so we add 1
        and the spacing on either side when summing. *)
     let cols = list_sum t.widths ~f:(( + ) (1 + (spacing * 2))) + 1 in
     let rows = list_sum t.heights ~f:(( + ) mid_row) + 3 - (2 * mid_row) in
     let screen = Screen.create ~rows ~cols in
-    let point = if display = Display.Column_titles then Screen.Blank else Screen.Line in
+    let point =
+      if [%compare.equal: Display.t] display Column_titles
+      then Screen.Blank
+      else Screen.Line
+    in
     Screen.hline screen ~row:0 ~col1:0 ~col2:(cols - 1) ~point ();
     Screen.hline screen ~row:(rows - 1) ~col1:0 ~col2:(cols - 1) ~point ();
-    if display <> Display.Blank
+    if not ([%compare.equal: Display.t] display Blank)
     then (
       Screen.vline screen ~col:0 ~row1:0 ~row2:(rows - 1) ~point ();
       ignore
@@ -430,7 +476,7 @@ module Grid = struct
               ~init:(1 + spacing)
               ~f:(fun col (attr, lines) (width, align) ->
                 let strings = El.slices width lines in
-                if display = Display.Line
+                if [%compare.equal: Display.t] display Line
                 then (
                   match strings with
                   | [] -> ()
@@ -450,9 +496,9 @@ module Grid = struct
                 col + 1 + (spacing * 2) + width)
             : int);
          let row = row + height in
-         if display = Display.Tall_box || header_row
+         if [%compare.equal: Display.t] display Tall_box || header_row
          then (
-           if display <> Display.Blank
+           if not ([%compare.equal: Display.t] display Blank)
            then Screen.hline screen ~row ~col1:0 ~col2:(cols - 1) ();
            row + 1)
          else row)
@@ -470,9 +516,9 @@ let draw
       cols
       data
   =
-  if cols = []
-  then None
-  else
+  match cols with
+  | [] -> None
+  | _ :: _ ->
     Some
       (Grid.create
          ~spacing
