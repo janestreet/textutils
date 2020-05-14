@@ -1,30 +1,5 @@
 open! Core_kernel
-
-module Attr = struct
-  (* This is equal to [Console.Ansi.attr]. We don't say that because we can't depend on
-     [Core]. Instead, we assert it in a test. *)
-  type color =
-    [ `Black
-    | `Red
-    | `Green
-    | `Yellow
-    | `Blue
-    | `Magenta
-    | `Cyan
-    | `White
-    ]
-  [@@deriving compare, sexp_of]
-
-  type t =
-    [ `Bright
-    | `Dim
-    | `Underscore
-    | `Reverse
-    | color
-    | `Bg of color
-    ]
-  [@@deriving compare, sexp_of]
-end
+module Attr = Ansi_kernel.Attr
 
 module Align = struct
   type t =

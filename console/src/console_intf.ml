@@ -39,25 +39,7 @@ module type S = sig
     val save_cursor : unit -> unit
     val unsave_cursor : unit -> unit
 
-    type color =
-      [ `Black
-      | `Red
-      | `Green
-      | `Yellow
-      | `Blue
-      | `Magenta
-      | `Cyan
-      | `White
-      ]
-
-    type attr =
-      [ `Bright
-      | `Dim
-      | `Underscore
-      | `Reverse
-      | color
-      | `Bg of color
-      ]
+    type attr = Ansi_kernel.Attr.t
 
     val printf : attr list -> 'a io_fmt -> 'a
     val eprintf : attr list -> 'a io_fmt -> 'a

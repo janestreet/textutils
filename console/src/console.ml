@@ -22,102 +22,19 @@ module Make (Io : Io) = struct
     let save_cursor () = Io.print_string "\027[s"
     let unsave_cursor () = Io.print_string "\027[u"
 
-    module Attr = struct
-      type color =
-        [ `Black
-        | `Red
-        | `Green
-        | `Yellow
-        | `Blue
-        | `Magenta
-        | `Cyan
-        | `White
-        ]
+    module All_attr = Ansi_kernel.With_all_attrs
+    module Attr = Ansi_kernel.Attr
 
-      type attr =
-        [ `Reset
-        | `Bright
-        | `Dim
-        | `Underscore
-        | `Blink
-        | `Reverse
-        | `Hidden
-        ]
-
-      type t =
-        [ attr
-        | color
-        | `Bg of color
-        ]
-
-      let attr_to_int : attr -> int = function
-        | `Reset -> 0
-        | `Bright -> 1
-        | `Dim -> 2
-        | `Underscore -> 4
-        | `Blink -> 5
-        | `Reverse -> 7
-        | `Hidden -> 8
-      ;;
-
-      let fg_to_int : color -> int = function
-        | `Black -> 30
-        | `Red -> 31
-        | `Green -> 32
-        | `Yellow -> 33
-        | `Blue -> 34
-        | `Magenta -> 35
-        | `Cyan -> 36
-        | `White -> 37
-      ;;
-
-      let bg_to_int : color -> int = function
-        | `Black -> 40
-        | `Red -> 41
-        | `Green -> 42
-        | `Yellow -> 43
-        | `Blue -> 44
-        | `Magenta -> 45
-        | `Cyan -> 46
-        | `White -> 47
-      ;;
-
-      let to_int : t -> int = function
-        | `Bg v -> bg_to_int v
-        | #color as v -> fg_to_int v
-        | #attr as v -> attr_to_int v
-      ;;
-
-      let list_to_string : t list -> string = function
-        | [] -> ""
-        | l ->
-          Printf.sprintf
-            "\027[%sm"
-            (String.concat
-               ~sep:";"
-               (List.map l ~f:(fun att -> string_of_int (to_int att))))
-      ;;
-    end
-
-    type color = Attr.color
-
-    type attr =
-      [ `Bright
-      | `Dim
-      | `Underscore
-      | `Reverse
-      | color
-      | `Bg of color
-      ]
+    type attr = Attr.t
 
     let string_with_attr style string =
       if style = []
       then string
       else
         String.concat
-          [ Attr.list_to_string (style :> Attr.t list)
+          [ All_attr.list_to_string (style :> All_attr.t list)
           ; string
-          ; Attr.list_to_string [ `Reset ]
+          ; All_attr.list_to_string [ `Reset ]
           ]
     ;;
 
@@ -126,9 +43,9 @@ module Make (Io : Io) = struct
       let%bind capable = Io.capable () in
       if capable && style <> []
       then (
-        Io.output_string oc (Attr.list_to_string (style :> Attr.t list));
+        Io.output_string oc (All_attr.list_to_string (style :> All_attr.t list));
         Io.output oc ~buf:s ~pos:start ~len;
-        Io.output_string oc (Attr.list_to_string [ `Reset ]);
+        Io.output_string oc (All_attr.list_to_string [ `Reset ]);
         Io.flush oc)
       else Io.return (Io.output oc ~buf:s ~pos:start ~len)
     ;;
@@ -138,19 +55,25 @@ module Make (Io : Io) = struct
       let%bind capable = Io.capable () in
       if capable && style <> []
       then (
-        Io.output_string oc (Attr.list_to_string (style :> Attr.t list));
+        Io.output_string oc (All_attr.list_to_string (style :> All_attr.t list));
         Io.output_string oc s;
-        Io.output_string oc (Attr.list_to_string [ `Reset ]);
+        Io.output_string oc (All_attr.list_to_string [ `Reset ]);
         Io.flush oc)
       else Io.return (Io.output_string oc s)
     ;;
 
     let eprintf style fmt =
-      Io.fprintf ~attrs:(Attr.list_to_string (style :> Attr.t list)) Io.stderr fmt
+      Io.fprintf
+        ~attrs:(All_attr.list_to_string (style :> All_attr.t list))
+        Io.stderr
+        fmt
     ;;
 
     let printf style fmt =
-      Io.fprintf ~attrs:(Attr.list_to_string (style :> Attr.t list)) Io.stdout fmt
+      Io.fprintf
+        ~attrs:(All_attr.list_to_string (style :> All_attr.t list))
+        Io.stdout
+        fmt
     ;;
   end
 

@@ -1,10 +1,6 @@
 open Core
 include Ascii_table_kernel
 
-module Color = struct
-  type t = Console.Ansi.color
-end
-
 let output_screen ~oc ~screen ~bars =
   Ascii_table_kernel.Screen.render screen ~bars ~close:ignore ~output:(fun attr buf ->
     Console.Ansi.output_string attr oc (Buffer.contents buf);

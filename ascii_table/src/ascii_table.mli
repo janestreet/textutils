@@ -1,9 +1,5 @@
 open! Core
 
-module Color : sig
-  type t = Console.Ansi.color
-end
-
 include module type of struct
   include Ascii_table_kernel
 end
