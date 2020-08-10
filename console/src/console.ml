@@ -63,17 +63,11 @@ module Make (Io : Io) = struct
     ;;
 
     let eprintf style fmt =
-      Io.fprintf
-        ~attrs:(All_attr.list_to_string (style :> All_attr.t list))
-        Io.stderr
-        fmt
+      Io.fprintf ~attrs:(All_attr.list_to_string (style :> All_attr.t list)) Io.stderr fmt
     ;;
 
     let printf style fmt =
-      Io.fprintf
-        ~attrs:(All_attr.list_to_string (style :> All_attr.t list))
-        Io.stdout
-        fmt
+      Io.fprintf ~attrs:(All_attr.list_to_string (style :> All_attr.t list)) Io.stdout fmt
     ;;
   end
 

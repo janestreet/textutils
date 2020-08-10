@@ -326,9 +326,7 @@ module Screen = struct
       row < t.rows - 1 && [%compare.equal: point] t.data.(row + 1).(col) Line
     in
     let left = col > 0 && [%compare.equal: point] t.data.(row).(col - 1) Line in
-    let right =
-      col < t.cols - 1 && [%compare.equal: point] t.data.(row).(col + 1) Line
-    in
+    let right = col < t.cols - 1 && [%compare.equal: point] t.data.(row).(col + 1) Line in
     Table_char.connect
       ?top:(Option.some_if top ())
       ?bottom:(Option.some_if bottom ())
