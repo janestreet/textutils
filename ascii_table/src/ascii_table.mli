@@ -5,12 +5,12 @@ include module type of struct
 end
 
 type ('row, 'rest) renderer =
-  ?display:Display.t (* Default: short_box *)
-  -> ?spacing:int (* Default: 1 *)
-  -> ?limit_width_to:int (* defaults to 90 characters *)
+  ?display:Display.t (** default: short_box **)
+  -> ?spacing:int (** default: 1 *)
+  -> ?limit_width_to:int (** default: 90 *)
   -> ?header_attr:Attr.t list
-  -> ?bars:[ `Ascii | `Unicode ] (* defaults to [`Unicode] *)
-  -> ?display_empty_rows:bool (* Default: false *)
+  -> ?bars:[ `Ascii | `Unicode ] (** default: `Unicode *)
+  -> ?display_empty_rows:bool (** default: false *)
   -> 'row Column.t list
   -> 'row list
   -> 'rest
@@ -28,7 +28,7 @@ val simple_list_table
   :  ?index:bool
   -> ?limit_width_to:int
   -> ?oc:Out_channel.t
-  -> ?display:Display.t
+  -> ?display:Display.t (** default: line *)
   -> string list
   -> string list list
   -> unit
