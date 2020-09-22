@@ -15,6 +15,7 @@ depends: [
   "core_kernel"
   "ppx_jane"
   "dune"        {>= "2.0.0"}
+  "uutf"        {>= "1.0.2"}
 ]
 synopsis: "Text output utilities"
 description: "

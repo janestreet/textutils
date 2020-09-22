@@ -55,3 +55,7 @@ let draw
          ~display_empty_rows
        |> Grid.to_screen)
 ;;
+
+module Private = struct
+  module Text = Text
+end

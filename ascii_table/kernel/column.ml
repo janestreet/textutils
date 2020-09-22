@@ -4,7 +4,7 @@ include Column_intf
 
 type 'a t =
   { max_width : int
-  ; header : string
+  ; header : Text.t
   ; col_func : 'a -> Cell.t
   ; align : Align.t
   ; min_width : int option
@@ -12,16 +12,20 @@ type 'a t =
   }
 [@@deriving fields, sexp_of]
 
-let header t = t.header
-let to_data t a = Cell.to_tuple (t.col_func a)
+let header t = Text.to_string t.header
+
+let to_data t a =
+  let attr, lines = Cell.to_tuple (t.col_func a) in
+  attr, List.map lines ~f:Text.to_string
+;;
 
 type constraints =
   { total_width : int
-  ; min_widths : (string * int) list
+  ; min_widths : (Text.t * int) list
   }
-[@@deriving sexp]
+[@@deriving sexp_of]
 
-exception Impossible_table_constraints of constraints [@@deriving sexp]
+exception Impossible_table_constraints of constraints [@@deriving sexp_of]
 
 let create_attr
       ?(align = Align.Left)
@@ -32,7 +36,7 @@ let create_attr
       parse_func
   =
   { max_width
-  ; header = str
+  ; header = Text.of_string str
   ; col_func =
       (fun x ->
          match parse_func x with
@@ -52,7 +56,7 @@ let to_cell t ~value = t.col_func value
 
 let desired_width ~spacing data t =
   let column_data = List.map data ~f:t.col_func in
-  let header_width = String.split t.header ~on:'\n' |> list_max ~f:String.length in
+  let header_width = Text.split t.header ~on:'\n' |> list_max ~f:Text.width in
   (* We need to account for the '|' to the left, so we add 1 plus the spacing
      on either side. *)
   1
@@ -90,7 +94,7 @@ let layout ts data ~spacing ~max_width:table_width =
          { total_width = table_width + 1
          ; min_widths =
              List.filter_map ts ~f:(fun t ->
-               Option.map t.min_width ~f:(fun num_chars -> t.header, num_chars))
+               Option.map t.min_width ~f:(fun min_width -> t.header, min_width))
          });
   let left = ref (list_sum ~f:Fn.id desired_widths - table_width) in
   let stop = ref false in

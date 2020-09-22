@@ -10,7 +10,9 @@ type t =
 [@@deriving compare, sexp_of]
 
 let create ~rows ~cols =
-  let data = Array.make_matrix ~dimx:rows ~dimy:cols (Char ([], ' ') : Texel.t) in
+  let data =
+    Array.make_matrix ~dimx:rows ~dimy:cols (Char ([], Uchar.of_char ' ') : Texel.t)
+  in
   { data; rows; cols }
 ;;
 
@@ -37,20 +39,14 @@ let vline t texel ~col =
 
 let char t attr char ~row ~col = t.data.(row).(col) <- Char (attr, char)
 
-let string t ~row ~col ~string ~attr =
-  for i = 0 to String.length string - 1 do
-    char t attr string.[i] ~row ~col:(col + i)
-  done
-;;
-
-let string t align attr str ~row ~col ~width =
+let string t align attr text ~row ~col ~width =
   let col =
     match (align : Column.Align.t) with
     | Left -> col
-    | Right -> col + width - String.length str
-    | Center -> col + (max 0 (width - String.length str) / 2)
+    | Right -> col + width - Text.width text
+    | Center -> col + (max 0 (width - Text.width text) / 2)
   in
-  string t ~row ~col ~string:str ~attr
+  Text.iteri text ~f:(fun i uchar -> char t attr uchar ~row ~col:(col + i))
 ;;
 
 let get_symbol t ~row ~col =
@@ -81,9 +77,9 @@ let render t ~bars ~output ~close =
   for row = 0 to t.rows - 1 do
     for col = 0 to t.cols - 1 do
       match t.data.(row).(col) with
-      | Char (attr, ch) ->
+      | Char (attr, uchar) ->
         update_attr attr;
-        Buffer.add_char buf ch
+        Uutf.Buffer.add_utf_8 buf uchar
       | Blank -> Buffer.add_char buf ' '
       | Line ->
         update_attr [];

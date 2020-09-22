@@ -91,22 +91,22 @@ let to_screen t =
             (List.zip_exn t.widths t.aligns)
             ~init:(1 + t.spacing)
             ~f:(fun col element (width, align) ->
-              let strings = Cell.wrap element ~width in
+              let lines = Cell.wrap element ~width in
               let attr = Cell.attr element in
               if [%compare.equal: Display.t] t.display Line
               then (
-                match strings with
+                match lines with
                 | [] -> ()
-                | [ string ] -> Screen.string screen align attr string ~row ~col ~width
-                | string :: _ ->
-                  Screen.string screen align attr string ~row ~col ~width;
+                | [ line ] -> Screen.string screen align attr line ~row ~col ~width
+                | line :: _ ->
+                  Screen.string screen align attr line ~row ~col ~width;
                   for col = col + max 0 (width - 3) to col + width - 1 do
-                    Screen.char screen [] '.' ~row ~col
+                    Screen.char screen [] (Uchar.of_char '.') ~row ~col
                   done)
               else
                 ignore
-                  (List.fold strings ~init:row ~f:(fun row string ->
-                     Screen.string screen align attr string ~row ~col ~width;
+                  (List.fold lines ~init:row ~f:(fun row line ->
+                     Screen.string screen align attr line ~row ~col ~width;
                      row + 1)
                    : int);
               col + 1 + (t.spacing * 2) + width)

@@ -67,4 +67,8 @@ module type Ascii_table_kernel = sig
 
     val connect : ?top:unit -> ?bottom:unit -> ?left:unit -> ?right:unit -> unit -> t
   end
+
+  module Private : sig
+    module Text = Text
+  end
 end

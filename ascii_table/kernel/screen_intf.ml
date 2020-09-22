@@ -9,7 +9,7 @@ module Texel = struct
   type t =
     | Line
     | Blank
-    | Char of Attr.t list * char
+    | Char of Attr.t list * Uchar.t
   [@@deriving compare, sexp_of]
 end
 
@@ -38,14 +38,14 @@ module type Screen = sig
     :  t
     -> Column.Align.t
     -> Attr.t list
-    -> string
+    -> Text.t
     -> row:int
     -> col:int
     -> width:int
     -> unit
 
   (** [char t attr c ~row ~col] writes [c] at [row, col]. *)
-  val char : t -> Attr.t list -> char -> row:int -> col:int -> unit
+  val char : t -> Attr.t list -> Uchar.t -> row:int -> col:int -> unit
 
   val create : rows:int -> cols:int -> t
 

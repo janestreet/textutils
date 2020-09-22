@@ -15,7 +15,7 @@ module type Cell = sig
 
   (** [to_tuple (create attr contents) = attr, lines] where the line breaks in [lines] are
       those indicated by '\n' in [contents] *)
-  val to_tuple : t -> Attr.t list * string list
+  val to_tuple : t -> Attr.t list * Text.t list
 
   (** [is_empty t] returns true if every line is empty. Note that this means [is_empty
       (create [] s) <> String.is_empty s] when [s] is all '\n'. *)
@@ -31,5 +31,5 @@ module type Cell = sig
 
   (** [wrap t ~width = lines] rewraps the lines of a cell to fit within [width]. [wrap]
       only adds new line breaks. *)
-  val wrap : t -> width:int -> string list
+  val wrap : t -> width:int -> Text.t list
 end
