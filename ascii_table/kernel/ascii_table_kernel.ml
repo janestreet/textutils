@@ -56,6 +56,13 @@ let draw
        |> Grid.to_screen)
 ;;
 
+let to_string_noattr ?display ?spacing ?limit_width_to ?display_empty_rows cols data ~bars
+  =
+  draw ?display ?spacing ?limit_width_to ?display_empty_rows ~header_attr:[] cols data
+  |> Option.map ~f:(Screen.to_string ~bars ~string_with_attr:(fun _attr s -> s))
+  |> Option.value ~default:""
+;;
+
 module Private = struct
   module Text = Text
 end

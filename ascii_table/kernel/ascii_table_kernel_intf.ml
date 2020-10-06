@@ -50,14 +50,24 @@ module type Ascii_table_kernel = sig
   end
 
   val draw
-    :  ?display:Display.t (* Default: short_box *)
-    -> ?spacing:int (* Default: 1 *)
-    -> ?limit_width_to:int (* defaults to 90 characters *)
+    :  ?display:Display.t (** Default: short_box *)
+    -> ?spacing:int (** Default: 1 *)
+    -> ?limit_width_to:int (** defaults to 90 characters *)
     -> ?header_attr:Attr.t list
-    -> ?display_empty_rows:bool (* Default: false *)
+    -> ?display_empty_rows:bool (** Default: false *)
     -> 'row Column.t list
     -> 'row list
     -> Screen.t option
+
+  val to_string_noattr
+    :  ?display:Display.t (** Default: short_box *)
+    -> ?spacing:int (** Default: 1 *)
+    -> ?limit_width_to:int (** defaults to 90 characters *)
+    -> ?display_empty_rows:bool (** Default: false *)
+    -> 'row Column.t list
+    -> 'row list
+    -> bars:[ `Ascii | `Unicode ]
+    -> string
 
   module Table_char : sig
     type t =
