@@ -38,6 +38,7 @@ let draw
       ?(limit_width_to = 90)
       ?(header_attr = [])
       ?(display_empty_rows = false)
+      ~prefer_split_on_spaces
       cols
       data
   =
@@ -53,12 +54,28 @@ let draw
          cols
          data
          ~display_empty_rows
-       |> Grid.to_screen)
+       |> Grid.to_screen ~prefer_split_on_spaces)
 ;;
 
-let to_string_noattr ?display ?spacing ?limit_width_to ?display_empty_rows cols data ~bars
+let to_string_noattr
+      ?display
+      ?spacing
+      ?limit_width_to
+      ?display_empty_rows
+      ?(prefer_split_on_spaces = false)
+      cols
+      data
+      ~bars
   =
-  draw ?display ?spacing ?limit_width_to ?display_empty_rows ~header_attr:[] cols data
+  draw
+    ?display
+    ?spacing
+    ?limit_width_to
+    ?display_empty_rows
+    ~header_attr:[]
+    cols
+    data
+    ~prefer_split_on_spaces
   |> Option.map ~f:(Screen.to_string ~bars ~string_with_attr:(fun _attr s -> s))
   |> Option.value ~default:""
 ;;

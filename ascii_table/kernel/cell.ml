@@ -16,5 +16,8 @@ let height (_, lines) ~display_empty_rows ~width =
   if display_empty_rows then max height 1 else height
 ;;
 
-let wrap (_, lines) ~width = List.bind lines ~f:(Text.chunks_of ~width)
+let wrap (_, lines) ~width ~prefer_split_on_spaces =
+  List.bind lines ~f:(Text.chunks_of ~width ~prefer_split_on_spaces)
+;;
+
 let is_empty (_, lines) = List.for_all lines ~f:Text.is_empty

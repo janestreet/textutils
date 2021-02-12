@@ -112,11 +112,12 @@ module Make (Io : Io) = struct
     let find_dim ~sep_len a max_len =
       let rec loop lines cols cnt =
         let nlines, ncols = dim (cnt + 1) a in
-        if nlines > lines
-        || lines = 1
-        (* we are not gaining in vertical space anymore *)
-        || line_len ~sep_len 0 ncols > max_len
-        (* we are overflowing *)
+        if
+          nlines > lines
+          || lines = 1
+          (* we are not gaining in vertical space anymore *)
+          || line_len ~sep_len 0 ncols > max_len
+          (* we are overflowing *)
         then Array.of_list cols
         else loop nlines ncols (cnt + 1)
       in

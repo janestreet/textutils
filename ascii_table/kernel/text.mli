@@ -9,6 +9,9 @@ open! Import
 
 type t [@@deriving compare, quickcheck, sexp_of]
 
+(** The invariant is that [t] is a sequence of well-formed UTF-8 code points. *)
+include Invariant.S with type t := t
+
 include Container.S0 with type t := t with type elt := Uchar.t
 include Stringable.S with type t := t
 
@@ -22,12 +25,17 @@ val width : t -> int
 (** [bytes t] is the number of bytes in the UTF-8 encoding of [t]. *)
 val bytes : t -> int
 
-(** [chunks_of t ~width] splits [t] into chunks no wider than [width] s.t. {[
+(** [chunks_of t ~width] splits [t] into chunks no wider than [width] characters s.t. {[
 
       t = t |> chunks_of ~width |> concat
 
-    ]}.  [chunks_of] always returns at least one chunk, which may be empty. *)
-val chunks_of : t -> width:int -> t list
+    ]}.  [chunks_of] always returns at least one chunk, which may be empty.
+
+    If [prefer_split_on_spaces = true] and such a space exists, [t] will be split on the
+    last U+020 SPACE before the chunk becomes too wide. Otherwise, the split happens
+    exactly at [width] characters.
+*)
+val chunks_of : t -> width:int -> prefer_split_on_spaces:bool -> t list
 
 val of_uchar_list : Uchar.t list -> t
 val concat : t list -> t

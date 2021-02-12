@@ -28,6 +28,6 @@ module type Grid = sig
     -> spacing:int
     -> t
 
-  val to_screen : t -> Screen.t
+  val to_screen : t -> prefer_split_on_spaces:bool -> Screen.t
 end
 

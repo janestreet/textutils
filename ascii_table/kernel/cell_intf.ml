@@ -31,5 +31,5 @@ module type Cell = sig
 
   (** [wrap t ~width = lines] rewraps the lines of a cell to fit within [width]. [wrap]
       only adds new line breaks. *)
-  val wrap : t -> width:int -> Text.t list
+  val wrap : t -> width:int -> prefer_split_on_spaces:bool -> Text.t list
 end

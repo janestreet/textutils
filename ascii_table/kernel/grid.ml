@@ -60,7 +60,7 @@ let create
   { data = grid_data; heights; widths; aligns; spacing; display }
 ;;
 
-let to_screen t =
+let to_screen t ~prefer_split_on_spaces =
   assert (List.length t.data = List.length t.heights);
   let mid_row = if [%compare.equal: Display.t] t.display Tall_box then 1 else 0 in
   (* The total width of the table includes the '|'s to the left of elements, so we add 1
@@ -91,7 +91,7 @@ let to_screen t =
             (List.zip_exn t.widths t.aligns)
             ~init:(1 + t.spacing)
             ~f:(fun col element (width, align) ->
-              let lines = Cell.wrap element ~width in
+              let lines = Cell.wrap element ~width ~prefer_split_on_spaces in
               let attr = Cell.attr element in
               if [%compare.equal: Display.t] t.display Line
               then (
