@@ -20,6 +20,7 @@ let create
       ~header_attr:h_attr
       ~max_width
       ~spacing
+      ~prefer_split_on_spaces
   =
   let body =
     List.map raw_data ~f:(fun value -> List.map cols ~f:(Column.Private.to_cell ~value))
@@ -53,7 +54,7 @@ let create
       List.map grid_data ~f:(fun row ->
         assert (List.length widths = List.length row);
         List.map2_exn widths row ~f:(fun width element ->
-          Cell.height element ~display_empty_rows ~width)
+          Cell.height element ~display_empty_rows ~width ~prefer_split_on_spaces)
         |> list_max ~f:Fn.id)
   in
   let aligns = List.map cols ~f:Column.align in

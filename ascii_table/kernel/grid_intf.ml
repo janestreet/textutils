@@ -26,6 +26,7 @@ module type Grid = sig
     -> header_attr:Attr.t list
     -> max_width:int
     -> spacing:int
+    -> prefer_split_on_spaces:bool
     -> t
 
   val to_screen : t -> prefer_split_on_spaces:bool -> Screen.t

@@ -24,12 +24,17 @@ module type Cell = sig
   (** [width t] returns the length of the longest line in [t] *)
   val width : t -> int
 
-  (** [height t ~display_empty_rows:false ~width = List.length (wrap t ~width)].
-
-      When [display_empty_rows = true], [height] always returns at least 1. *)
-  val height : t -> display_empty_rows:bool -> width:int -> int
-
   (** [wrap t ~width = lines] rewraps the lines of a cell to fit within [width]. [wrap]
       only adds new line breaks. *)
   val wrap : t -> width:int -> prefer_split_on_spaces:bool -> Text.t list
+
+  (** [height t ~display_empty_rows:false ~width = List.length (wrap t ~width)].
+
+      When [display_empty_rows = true], [height] always returns at least 1. *)
+  val height
+    :  t
+    -> display_empty_rows:bool
+    -> width:int
+    -> prefer_split_on_spaces:bool
+    -> int
 end

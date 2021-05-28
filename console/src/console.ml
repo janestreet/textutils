@@ -4,6 +4,7 @@ include Console_intf
 (** Color printing in terminals  *)
 open Core
 
+module Unix = Core_unix
 open Poly
 
 module Make (Io : Io) = struct

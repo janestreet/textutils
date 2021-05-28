@@ -54,6 +54,7 @@ let draw
          cols
          data
          ~display_empty_rows
+         ~prefer_split_on_spaces
        |> Grid.to_screen ~prefer_split_on_spaces)
 ;;
 
