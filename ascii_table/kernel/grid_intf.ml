@@ -1,6 +1,6 @@
 (** A grid lays out cells with concrete dimensions. *)
 
-open! Core_kernel
+open! Core
 open! Import
 
 module Display = struct

@@ -1,6 +1,6 @@
 (** A [Screen] is two-dimensional grid of text elements onto which we draw imperatively. *)
 
-open! Core_kernel
+open! Core
 open! Import
 
 module Texel = struct

@@ -4,7 +4,7 @@
     cell in a limited width.
 *)
 
-open! Core_kernel
+open! Core
 open! Import
 
 module type Cell = sig

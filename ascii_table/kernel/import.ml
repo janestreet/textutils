@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 module Attr = Ansi_kernel.Attr
 
 let list_sum l ~f = List.sum (module Int) l ~f

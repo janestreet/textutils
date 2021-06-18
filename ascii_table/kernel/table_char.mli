@@ -1,6 +1,6 @@
 (** [Table_char] holds a box-drawing character *)
 
-open! Core_kernel
+open! Core
 open! Import
 
 type t =

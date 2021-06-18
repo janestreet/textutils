@@ -4,7 +4,7 @@
     when we mean [Text.width].
 *)
 
-open! Core_kernel
+open! Core
 open! Import
 
 type t [@@deriving compare, quickcheck, sexp_of]

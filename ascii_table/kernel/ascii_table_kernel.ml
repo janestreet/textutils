@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open! Import
 include Ascii_table_kernel_intf
 module Align = Column.Align
