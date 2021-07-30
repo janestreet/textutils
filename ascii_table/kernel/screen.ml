@@ -43,10 +43,10 @@ let string t align attr text ~row ~col ~width =
   let col =
     match (align : Column.Align.t) with
     | Left -> col
-    | Right -> col + width - Text.width text
-    | Center -> col + (max 0 (width - Text.width text) / 2)
+    | Right -> col + width - Utf8_text.width text
+    | Center -> col + (max 0 (width - Utf8_text.width text) / 2)
   in
-  Text.iteri text ~f:(fun i uchar -> char t attr uchar ~row ~col:(col + i))
+  Utf8_text.iteri text ~f:(fun i uchar -> char t attr uchar ~row ~col:(col + i))
 ;;
 
 let get_symbol t ~row ~col =

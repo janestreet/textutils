@@ -4,7 +4,7 @@ include Column_intf
 
 type 'a t =
   { max_width : int
-  ; header : Text.t
+  ; header : Utf8_text.t
   ; col_func : 'a -> Cell.t
   ; align : Align.t
   ; min_width : int option
@@ -12,16 +12,16 @@ type 'a t =
   }
 [@@deriving fields, sexp_of]
 
-let header t = Text.to_string t.header
+let header t = Utf8_text.to_string t.header
 
 let to_data t a =
   let attr, lines = Cell.to_tuple (t.col_func a) in
-  attr, List.map lines ~f:Text.to_string
+  attr, List.map lines ~f:Utf8_text.to_string
 ;;
 
 type constraints =
   { total_width : int
-  ; min_widths : (Text.t * int) list
+  ; min_widths : (Utf8_text.t * int) list
   }
 [@@deriving sexp_of]
 
@@ -36,7 +36,7 @@ let create_attr
       parse_func
   =
   { max_width
-  ; header = Text.of_string str
+  ; header = Utf8_text.of_string str
   ; col_func =
       (fun x ->
          match parse_func x with
@@ -56,7 +56,7 @@ let to_cell t ~value = t.col_func value
 
 let desired_width ~spacing data t =
   let column_data = List.map data ~f:t.col_func in
-  let header_width = Text.split t.header ~on:'\n' |> list_max ~f:Text.width in
+  let header_width = Utf8_text.split t.header ~on:'\n' |> list_max ~f:Utf8_text.width in
   (* We need to account for the '|' to the left, so we add 1 plus the spacing
      on either side. *)
   1
