@@ -45,6 +45,7 @@ module type Column = sig
     -> ('a -> Attr.t list * string)
     -> 'a t
 
+  val lift : 'a t -> f:('b -> 'a) -> 'b t
   val align : _ t -> Align.t
   val header : 'a t -> string
   val show : _ t -> Show.t

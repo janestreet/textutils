@@ -12,6 +12,7 @@ type 'a t =
   }
 [@@deriving fields, sexp_of]
 
+let lift t ~f = { t with col_func = (fun x -> t.col_func (f x)) }
 let header t = Utf8_text.to_string t.header
 
 let to_data t a =
