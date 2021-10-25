@@ -15,6 +15,7 @@ module Make (Io : Io) = struct
     let erase_to_start_of_screen () = Io.print_string "\027[1J"
     let erase_all () = Io.print_string "\027[2J"
     let bell () = Io.print_string "\007"
+    let home () = Io.print_string "\027[H"
     let home_cursor () = Io.print_string "\027[0G"
     let cursor_up () = Io.print_string "\027[A"
     let cursor_down () = Io.print_string "\027[B"
