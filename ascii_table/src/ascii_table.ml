@@ -74,14 +74,18 @@ let to_string_gen
 let to_string_noattr = to_string_gen ~string_with_attr:(fun _attrs str -> str)
 let to_string = to_string_gen ~string_with_attr:Console.Ansi.string_with_attr
 
-let simple_list_table
+let simple_list_table_internal
       ?(index = false)
-      ?(limit_width_to = 160)
-      ?(oc = stdout)
       ?(display = Ascii_table_kernel.Display.line)
-      ?(prefer_split_on_spaces = false)
+      ?spacing
+      ?(limit_width_to = 160)
+      ?header_attr
+      ?bars
+      ?display_empty_rows
+      ?prefer_split_on_spaces
       cols
       data
+      ~(f : (_, _) renderer)
   =
   let cols, data =
     if index
@@ -97,5 +101,17 @@ let simple_list_table
       in
       Ascii_table_kernel.Column.create col (fun ls -> List.nth_exn ls i) ~align)
   in
-  output ~oc ~display ~limit_width_to ~prefer_split_on_spaces cols data
+  f
+    ~display
+    ?spacing
+    ~limit_width_to
+    ?header_attr
+    ?bars
+    ?display_empty_rows
+    ?prefer_split_on_spaces
+    cols
+    data
 ;;
+
+let simple_list_table ?(oc = stdout) = simple_list_table_internal ~f:(output ~oc)
+let simple_list_table_string = simple_list_table_internal ~f:to_string

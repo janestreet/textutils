@@ -26,12 +26,19 @@ val to_string_noattr : (_, string) renderer
 val to_string : (_, string) renderer
 
 
-val simple_list_table
-  :  ?index:bool
-  -> ?limit_width_to:int
-  -> ?oc:Out_channel.t
-  -> ?display:Display.t (** default: line *)
-  -> ?prefer_split_on_spaces:bool (** default: false  *)
+(** [simple_list] has the same defaults as renderer unless specified *)
+type 'rest simple_list :=
+  ?index:bool
+  -> ?display:Display.t (** default: line **)
+  -> ?spacing:int
+  -> ?limit_width_to:int (** default: 160 *)
+  -> ?header_attr:Attr.t list
+  -> ?bars:[ `Ascii | `Unicode ]
+  -> ?display_empty_rows:bool
+  -> ?prefer_split_on_spaces:bool
   -> string list
   -> string list list
-  -> unit
+  -> 'rest
+
+val simple_list_table : ?oc:Out_channel.t -> unit simple_list
+val simple_list_table_string : string simple_list
