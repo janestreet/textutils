@@ -7,7 +7,8 @@ end
 type ('row, 'rest) renderer =
   ?display:Display.t (** default: short_box **)
   -> ?spacing:int (** default: 1 *)
-  -> ?limit_width_to:int (** default: 90 *)
+  ->
+  ?limit_width_to:int (** default: 90 *)
   -> ?header_attr:Attr.t list
   -> ?bars:[ `Ascii | `Unicode ] (** default: `Unicode *)
   -> ?display_empty_rows:bool (** default: false *)
