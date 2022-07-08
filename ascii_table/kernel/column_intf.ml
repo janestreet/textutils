@@ -45,11 +45,22 @@ module type Column = sig
     -> ('a -> Attr.t list * string)
     -> 'a t
 
+  (** like create_attr, except that you can specify many lines with different
+      attributes. *)
+  val create_attrs
+    :  ?align:Align.t (* Default: left *)
+    -> ?min_width:int
+    -> ?max_width:int
+    -> ?show:[ `Yes | `No | `If_not_empty ] (* Default: `Yes *)
+    -> string
+    -> ('a -> (Attr.t list * string) list)
+    -> 'a t
+
   val lift : 'a t -> f:('b -> 'a) -> 'b t
   val align : _ t -> Align.t
   val header : 'a t -> string
   val show : _ t -> Show.t
-  val to_data : 'a t -> 'a -> Attr.t list * string list
+  val to_data : 'a t -> 'a -> (Attr.t list * string) list
 
   module Of_field : sig
     (** This module is used for constructing lists of ['a t]s from a record's fields. The

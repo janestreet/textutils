@@ -45,7 +45,7 @@ let create
      '|'s to form the right wall of the table. *)
   let widths = Column.Private.layout cols raw_data ~spacing ~max_width:(max_width - 1) in
   let grid_data =
-    List.map cols ~f:(fun column -> Cell.create h_attr (Column.header column)) :: body
+    List.map cols ~f:(fun column -> Cell.create [ h_attr, Column.header column ]) :: body
   in
   let heights =
     if [%compare.equal: Display.t] display Line
@@ -92,21 +92,21 @@ let to_screen t ~prefer_split_on_spaces =
             (List.zip_exn t.widths t.aligns)
             ~init:(1 + t.spacing)
             ~f:(fun col element (width, align) ->
-              let lines = Cell.wrap element ~width ~prefer_split_on_spaces in
-              let attr = Cell.attr element in
+              let lines = Cell.wrap_lines element ~width ~prefer_split_on_spaces in
               if [%compare.equal: Display.t] t.display Line
               then (
                 match lines with
                 | [] -> ()
-                | [ line ] -> Screen.string screen align attr line ~row ~col ~width
-                | line :: _ ->
+                | [ (attr, line) ] ->
+                  Screen.string screen align attr line ~row ~col ~width
+                | (attr, line) :: _ ->
                   Screen.string screen align attr line ~row ~col ~width;
                   for col = col + max 0 (width - 3) to col + width - 1 do
                     Screen.char screen [] (Uchar.of_char '.') ~row ~col
                   done)
               else
                 ignore
-                  (List.fold lines ~init:row ~f:(fun row line ->
+                  (List.fold lines ~init:row ~f:(fun row (attr, line) ->
                      Screen.string screen align attr line ~row ~col ~width;
                      row + 1)
                    : int);

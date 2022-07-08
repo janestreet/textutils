@@ -16,8 +16,8 @@ let lift t ~f = { t with col_func = (fun x -> t.col_func (f x)) }
 let header t = Utf8_text.to_string t.header
 
 let to_data t a =
-  let attr, lines = Cell.to_tuple (t.col_func a) in
-  attr, List.map lines ~f:Utf8_text.to_string
+  let tuples = Cell.lines (t.col_func a) in
+  List.map tuples ~f:(fun (attrs, line) -> attrs, Utf8_text.to_string line)
 ;;
 
 type constraints =
@@ -28,7 +28,7 @@ type constraints =
 
 exception Impossible_table_constraints of constraints [@@deriving sexp_of]
 
-let create_attr
+let create_attrs
       ?(align = Align.Left)
       ?min_width
       ?(max_width = 90)
@@ -38,10 +38,7 @@ let create_attr
   =
   { max_width
   ; header = Utf8_text.of_string str
-  ; col_func =
-      (fun x ->
-         match parse_func x with
-         | a, b -> Cell.create a b)
+  ; col_func = (fun x -> Cell.create (parse_func x))
   ; align
   ; (* We add one for the '|' on the left. *)
     min_width = Option.map min_width ~f:(( + ) 1)
@@ -49,8 +46,12 @@ let create_attr
   }
 ;;
 
-let create ?(align = Align.Left) ?min_width ?(max_width = 90) ?show str parse_func =
-  create_attr ?min_width ~align ~max_width ?show str (fun x -> [], parse_func x)
+let create_attr ?align ?min_width ?max_width ?show str parse_func =
+  create_attrs ?align ?min_width ?max_width ?show str (fun x -> [ parse_func x ])
+;;
+
+let create ?align ?min_width ?max_width ?show str parse_func =
+  create_attrs ?align ?min_width ?max_width ?show str (fun x -> [ [], parse_func x ])
 ;;
 
 let to_cell t ~value = t.col_func value
@@ -114,12 +115,18 @@ let layout ts data ~spacing ~max_width:table_width =
              | Some x -> x
              | None -> generic_min_chars
            in
-           if column_width <= min_chars || !left <= 0
-           then column_width
-           else (
-             left := !left - 1;
-             stop := false;
-             column_width - 1))))
+           let width =
+             if column_width <= min_chars || !left <= 0
+             then column_width
+             else (
+               left := !left - 1;
+               stop := false;
+               column_width - 1)
+           in
+           (* Respect [min_width], if specified. *)
+           match t.min_width with
+           | None -> width
+           | Some min_width -> max width min_width)))
   in
   (* The widths used in [loop] include the '|' to the left of each element,
      which isn't important after layout, so we subtract off 1 and the spacing
