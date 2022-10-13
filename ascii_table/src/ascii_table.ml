@@ -79,6 +79,7 @@ let simple_list_table_internal
       ?(display = Ascii_table_kernel.Display.line)
       ?spacing
       ?(limit_width_to = 160)
+      ?(max_col_width = 90)
       ?header_attr
       ?bars
       ?display_empty_rows
@@ -99,7 +100,11 @@ let simple_list_table_internal
         | None -> col, Ascii_table_kernel.Align.Right
         | Some col -> col, Ascii_table_kernel.Align.Left
       in
-      Ascii_table_kernel.Column.create col (fun ls -> List.nth_exn ls i) ~align)
+      Ascii_table_kernel.Column.create
+        ~max_width:max_col_width
+        col
+        (fun ls -> List.nth_exn ls i)
+        ~align)
   in
   f
     ~display
