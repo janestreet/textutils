@@ -97,8 +97,7 @@ let to_screen t ~prefer_split_on_spaces =
               then (
                 match lines with
                 | [] -> ()
-                | [ (attr, line) ] ->
-                  Screen.string screen align attr line ~row ~col ~width
+                | [ (attr, line) ] -> Screen.string screen align attr line ~row ~col ~width
                 | (attr, line) :: _ ->
                   Screen.string screen align attr line ~row ~col ~width;
                   for col = col + max 0 (width - 3) to col + width - 1 do
