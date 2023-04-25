@@ -1,3 +1,10 @@
+## Release v0.16.0
+
+* Can now limit the max width of a column in ascii_table
+* Ascii_table cells can now have different attributes per line
+
+## Old pre-v0.15 changelogs (very likely stale and incomplete)
+
 ## v0.10
 
 - Added library `Textutils_kernel`, created by splitting out the
