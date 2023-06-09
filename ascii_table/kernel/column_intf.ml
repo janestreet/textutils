@@ -57,10 +57,13 @@ module type Column = sig
     -> 'a t
 
   val lift : 'a t -> f:('b -> 'a) -> 'b t
+  val optional : 'a t -> 'a option t
   val align : _ t -> Align.t
   val header : 'a t -> string
   val show : _ t -> Show.t
   val to_data : 'a t -> 'a -> (Attr.t list * string) list
+  val update_header : f:(string -> string) -> 'a t -> 'a t
+  val update_show : f:(Show.t -> Show.t) -> 'a t -> 'a t
 
   module Of_field : sig
     (** This module is used for constructing lists of ['a t]s from a record's fields. The

@@ -15,6 +15,15 @@ type 'a t =
 let lift t ~f = { t with col_func = (fun x -> t.col_func (f x)) }
 let header t = Utf8_text.to_string t.header
 
+let optional t =
+  { t with
+    col_func =
+      (function
+        | None -> Cell.create []
+        | Some x -> t.col_func x)
+  }
+;;
+
 let to_data t a =
   let tuples = Cell.lines (t.col_func a) in
   List.map tuples ~f:(fun (attrs, line) -> attrs, Utf8_text.to_string line)
@@ -55,6 +64,8 @@ let create ?align ?min_width ?max_width ?show str parse_func =
 ;;
 
 let to_cell t ~value = t.col_func value
+let update_header ~f t = { t with header = f (header t) |> Utf8_text.of_string }
+let update_show ~f t = { t with show = f t.show }
 
 let desired_width ~spacing data t =
   let column_data = List.map data ~f:t.col_func in
