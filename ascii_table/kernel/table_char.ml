@@ -5,7 +5,7 @@ type t =
   { ascii : char
   ; utf8 : string
   }
-[@@deriving fields, sexp_of]
+[@@deriving sexp_of]
 
 let connect ?top ?bottom ?left ?right () =
   let top, bottom, left, right =
