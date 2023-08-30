@@ -13,14 +13,14 @@ type t =
 [@@deriving sexp_of]
 
 let create
-      cols
-      raw_data
-      ~display
-      ~display_empty_rows
-      ~header_attr:h_attr
-      ~max_width
-      ~spacing
-      ~prefer_split_on_spaces
+  cols
+  raw_data
+  ~display
+  ~display_empty_rows
+  ~header_attr:h_attr
+  ~max_width
+  ~spacing
+  ~prefer_split_on_spaces
   =
   let body =
     List.map raw_data ~f:(fun value -> List.map cols ~f:(Column.Private.to_cell ~value))
@@ -82,7 +82,7 @@ let to_screen t ~prefer_split_on_spaces =
          let col = col + 1 + width + (t.spacing * 2) in
          Screen.vline screen texel ~col;
          col)
-       : int));
+        : int));
   ignore
     (List.fold2_exn t.data t.heights ~init:1 ~f:(fun row row_elements height ->
        let header_row = row = 1 in
@@ -92,25 +92,25 @@ let to_screen t ~prefer_split_on_spaces =
             (List.zip_exn t.widths t.aligns)
             ~init:(1 + t.spacing)
             ~f:(fun col element (width, align) ->
-              let lines = Cell.wrap_lines element ~width ~prefer_split_on_spaces in
-              if [%compare.equal: Display.t] t.display Line
-              then (
-                match lines with
-                | [] -> ()
-                | [ (attr, line) ] -> Screen.string screen align attr line ~row ~col ~width
-                | (attr, line) :: _ ->
-                  Screen.string screen align attr line ~row ~col ~width;
-                  for col = col + max 0 (width - 3) to col + width - 1 do
-                    Screen.char screen [] (Uchar.of_char '.') ~row ~col
-                  done)
-              else
-                ignore
-                  (List.fold lines ~init:row ~f:(fun row (attr, line) ->
-                     Screen.string screen align attr line ~row ~col ~width;
-                     row + 1)
-                   : int);
-              col + 1 + (t.spacing * 2) + width)
-          : int);
+            let lines = Cell.wrap_lines element ~width ~prefer_split_on_spaces in
+            if [%compare.equal: Display.t] t.display Line
+            then (
+              match lines with
+              | [] -> ()
+              | [ (attr, line) ] -> Screen.string screen align attr line ~row ~col ~width
+              | (attr, line) :: _ ->
+                Screen.string screen align attr line ~row ~col ~width;
+                for col = col + max 0 (width - 3) to col + width - 1 do
+                  Screen.char screen [] (Uchar.of_char '.') ~row ~col
+                done)
+            else
+              ignore
+                (List.fold lines ~init:row ~f:(fun row (attr, line) ->
+                   Screen.string screen align attr line ~row ~col ~width;
+                   row + 1)
+                  : int);
+            col + 1 + (t.spacing * 2) + width)
+           : int);
        let row = row + height in
        if [%compare.equal: Display.t] t.display Tall_box || header_row
        then (
@@ -118,6 +118,6 @@ let to_screen t ~prefer_split_on_spaces =
          then Screen.hline screen Line ~row;
          row + 1)
        else row)
-     : int);
+      : int);
   screen
 ;;

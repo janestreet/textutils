@@ -33,14 +33,14 @@ module Screen = struct
 end
 
 let draw
-      ?(display = Display.short_box)
-      ?(spacing = 1)
-      ?(limit_width_to = 90)
-      ?(header_attr = [])
-      ?(display_empty_rows = false)
-      ~prefer_split_on_spaces
-      cols
-      data
+  ?(display = Display.short_box)
+  ?(spacing = 1)
+  ?(limit_width_to = 90)
+  ?(header_attr = [])
+  ?(display_empty_rows = false)
+  ~prefer_split_on_spaces
+  cols
+  data
   =
   match cols with
   | [] -> None
@@ -59,14 +59,14 @@ let draw
 ;;
 
 let to_string_noattr
-      ?display
-      ?spacing
-      ?limit_width_to
-      ?display_empty_rows
-      ?(prefer_split_on_spaces = false)
-      cols
-      data
-      ~bars
+  ?display
+  ?spacing
+  ?limit_width_to
+  ?display_empty_rows
+  ?(prefer_split_on_spaces = false)
+  cols
+  data
+  ~bars
   =
   draw
     ?display

@@ -19,8 +19,8 @@ let optional t =
   { t with
     col_func =
       (function
-        | None -> Cell.create []
-        | Some x -> t.col_func x)
+       | None -> Cell.create []
+       | Some x -> t.col_func x)
   }
 ;;
 
@@ -38,12 +38,12 @@ type constraints =
 exception Impossible_table_constraints of constraints [@@deriving sexp_of]
 
 let create_attrs
-      ?(align = Align.Left)
-      ?min_width
-      ?(max_width = 90)
-      ?(show = `Yes)
-      str
-      parse_func
+  ?(align = Align.Left)
+  ?min_width
+  ?(max_width = 90)
+  ?(show = `Yes)
+  str
+  parse_func
   =
   { max_width
   ; header = Utf8_text.of_string str
@@ -157,13 +157,13 @@ module Of_field = struct
   ;;
 
   let field_attr
-        ?align
-        ?min_width
-        ?max_width
-        ?show
-        ?header
-        to_string_and_attr
-        record_field
+    ?align
+    ?min_width
+    ?max_width
+    ?show
+    ?header
+    to_string_and_attr
+    record_field
     =
     create_attr
       ?align
@@ -182,19 +182,19 @@ module Of_field = struct
       ?show
       ?header
       (function
-        | None -> ""
-        | Some x -> to_string x)
+       | None -> ""
+       | Some x -> to_string x)
       record_field
   ;;
 
   let field_opt_attr
-        ?align
-        ?min_width
-        ?max_width
-        ?show
-        ?header
-        to_string_and_attr
-        record_field
+    ?align
+    ?min_width
+    ?max_width
+    ?show
+    ?header
+    to_string_and_attr
+    record_field
     =
     field_attr
       ?align
@@ -203,8 +203,8 @@ module Of_field = struct
       ?show
       ?header
       (function
-        | None -> [], ""
-        | Some x -> to_string_and_attr x)
+       | None -> [], ""
+       | Some x -> to_string_and_attr x)
       record_field
   ;;
 end

@@ -20,16 +20,16 @@ type ('row, 'rest) renderer =
   -> 'rest
 
 let output
-      ?display
-      ?spacing
-      ?limit_width_to
-      ?header_attr
-      ?(bars = `Unicode)
-      ?display_empty_rows
-      ?(prefer_split_on_spaces = false)
-      cols
-      data
-      ~oc
+  ?display
+  ?spacing
+  ?limit_width_to
+  ?header_attr
+  ?(bars = `Unicode)
+  ?display_empty_rows
+  ?(prefer_split_on_spaces = false)
+  cols
+  data
+  ~oc
   =
   Option.iter
     (Ascii_table_kernel.draw
@@ -45,16 +45,16 @@ let output
 ;;
 
 let to_string_gen
-      ?display
-      ?spacing
-      ?limit_width_to
-      ?header_attr
-      ?(bars = `Unicode)
-      ?display_empty_rows
-      ?(prefer_split_on_spaces = false)
-      cols
-      data
-      ~string_with_attr
+  ?display
+  ?spacing
+  ?limit_width_to
+  ?header_attr
+  ?(bars = `Unicode)
+  ?display_empty_rows
+  ?(prefer_split_on_spaces = false)
+  cols
+  data
+  ~string_with_attr
   =
   match
     Ascii_table_kernel.draw
@@ -75,18 +75,18 @@ let to_string_noattr = to_string_gen ~string_with_attr:(fun _attrs str -> str)
 let to_string = to_string_gen ~string_with_attr:Console.Ansi.string_with_attr
 
 let simple_list_table_internal
-      ?(index = false)
-      ?(display = Ascii_table_kernel.Display.line)
-      ?spacing
-      ?(limit_width_to = 160)
-      ?(max_col_width = 90)
-      ?header_attr
-      ?bars
-      ?display_empty_rows
-      ?prefer_split_on_spaces
-      cols
-      data
-      ~(f : (_, _) renderer)
+  ?(index = false)
+  ?(display = Ascii_table_kernel.Display.line)
+  ?spacing
+  ?(limit_width_to = 160)
+  ?(max_col_width = 90)
+  ?header_attr
+  ?bars
+  ?display_empty_rows
+  ?prefer_split_on_spaces
+  cols
+  data
+  ~(f : (_, _) renderer)
   =
   let cols, data =
     if index

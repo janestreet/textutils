@@ -31,4 +31,3 @@ module type Grid = sig
 
   val to_screen : t -> prefer_split_on_spaces:bool -> Screen.t
 end
-
