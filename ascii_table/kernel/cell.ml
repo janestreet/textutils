@@ -14,7 +14,7 @@ let lines = Fn.id
 
 let wrap_lines lines ~width ~prefer_split_on_spaces =
   List.concat_map lines ~f:(fun (attrs, line) ->
-    let chunks = Utf8_text.chunks_of ~width ~prefer_split_on_spaces line in
+    let chunks = Utf8_text_chunks.of_utf8 ~width ~prefer_split_on_spaces line in
     List.map chunks ~f:(fun chunk -> attrs, chunk))
 ;;
 

@@ -80,3 +80,7 @@ let to_string_noattr
   |> Option.map ~f:(Screen.to_string ~bars ~string_with_attr:(fun _attr s -> s))
   |> Option.value ~default:""
 ;;
+
+module Private = struct
+  module Utf8_text_chunks = Utf8_text_chunks
+end

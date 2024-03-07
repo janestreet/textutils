@@ -79,4 +79,11 @@ module type Ascii_table_kernel = sig
 
     val connect : ?top:unit -> ?bottom:unit -> ?left:unit -> ?right:unit -> unit -> t
   end
+
+  module Private : sig
+    module Utf8_text_chunks = Utf8_text_chunks
+  end
+  [@@alert
+    ascii_table_kernel_private
+      "This module is intended only for tests of Ascii_table_kernel."]
 end
