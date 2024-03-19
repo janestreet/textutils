@@ -7,4 +7,8 @@ open! Core
     If [prefer_split_on_spaces = true] and such a space exists, [utf8] will be split on
     the last U+0020 SPACE before the chunk becomes too wide. Otherwise, the split happens
     exactly at [width] characters. *)
-val of_utf8 : Utf8_text.t -> width:int -> prefer_split_on_spaces:bool -> Utf8_text.t list
+val of_utf8
+  :  String.Utf8.t
+  -> width:int
+  -> prefer_split_on_spaces:bool
+  -> String.Utf8.t list

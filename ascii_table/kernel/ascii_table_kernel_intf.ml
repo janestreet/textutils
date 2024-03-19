@@ -1,6 +1,10 @@
 open! Core
 open! Import
 
+(* Note: For UTF-8 tables, this module makes a naive assumption that each grapheme cluster
+   in the text is comprised of only one Unicode scalar value. If this is not the case, the
+   width calculations will be incorrect. *)
+
 module type Ascii_table_kernel = sig
   module Attr = Attr
   module Align = Column.Align

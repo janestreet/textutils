@@ -4,7 +4,7 @@ include Column_intf
 
 type 'a t =
   { max_width : int
-  ; header : Utf8_text.t
+  ; header : String.Utf8.t
   ; col_func : 'a -> Cell.t
   ; align : Align.t
   ; min_width : int option
@@ -13,7 +13,7 @@ type 'a t =
 [@@deriving fields ~getters, sexp_of]
 
 let lift t ~f = { t with col_func = (fun x -> t.col_func (f x)) }
-let header t = Utf8_text.to_string t.header
+let header t = String.Utf8.to_string t.header
 
 let optional t =
   { t with
@@ -26,12 +26,12 @@ let optional t =
 
 let to_data t a =
   let tuples = Cell.lines (t.col_func a) in
-  List.map tuples ~f:(fun (attrs, line) -> attrs, Utf8_text.to_string line)
+  List.map tuples ~f:(fun (attrs, line) -> attrs, String.Utf8.to_string line)
 ;;
 
 type constraints =
   { total_width : int
-  ; min_widths : (Utf8_text.t * int) list
+  ; min_widths : (String.Utf8.t * int) list
   }
 [@@deriving sexp_of]
 
@@ -46,7 +46,7 @@ let create_attrs
   parse_func
   =
   { max_width
-  ; header = Utf8_text.of_string str
+  ; header = String.Utf8.of_string str
   ; col_func = (fun x -> Cell.create (parse_func x))
   ; align
   ; (* We add one for the '|' on the left. *)
@@ -64,12 +64,17 @@ let create ?align ?min_width ?max_width ?show str parse_func =
 ;;
 
 let to_cell t ~value = t.col_func value
-let update_header ~f t = { t with header = f (header t) |> Utf8_text.of_string }
+let update_header ~f t = { t with header = f (header t) |> String.Utf8.of_string }
 let update_show ~f t = { t with show = f t.show }
 
 let desired_width ~spacing data t =
   let column_data = List.map data ~f:t.col_func in
-  let header_width = Utf8_text.split t.header ~on:'\n' |> list_max ~f:Utf8_text.width in
+  let header_width =
+    (* See docs for [String.Utf8.length_in_uchars] on the limitations of assuming
+       that the width per uchar is 1. *)
+    String.Utf8.split t.header ~on:(Uchar.of_char '\n')
+    |> list_max ~f:String.Utf8.length_in_uchars
+  in
   (* We need to account for the '|' to the left, so we add 1 plus the spacing
      on either side. *)
   1

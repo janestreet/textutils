@@ -38,7 +38,7 @@ module type Screen = sig
     :  t
     -> Column.Align.t
     -> Attr.t list
-    -> Utf8_text.t
+    -> String.Utf8.t
     -> row:int
     -> col:int
     -> width:int

@@ -15,9 +15,9 @@ let fold_utf8_with_start_pos t ~init ~f =
 ;;
 
 let of_utf8 utf8 ~width ~prefer_split_on_spaces =
-  let utf8 = Utf8_text.to_string utf8 in
+  let utf8 = String.Utf8.to_string utf8 in
   match utf8 with
-  | "" -> [ Utf8_text.of_string "" ]
+  | "" -> [ String.Utf8.of_string "" ]
   | _ ->
     let uchar_ends_before_pos =
       Uutf.String.fold_utf_8 (fun acc start_pos _ -> start_pos :: acc) [] utf8
@@ -68,7 +68,7 @@ let of_utf8 utf8 ~width ~prefer_split_on_spaces =
          Yield
            { value =
                String.sub utf8 ~pos:start_at ~len:(end_before - start_at)
-               |> Utf8_text.of_string
+               |> String.Utf8.of_string
            ; state = end_before
            })
     |> Sequence.to_list

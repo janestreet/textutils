@@ -21,7 +21,7 @@ module type Cell = sig
 
   (** [lines (create [ attr, contents; ... ])] splits up [contents] by '\n' and
       gives each line the same attributes. *)
-  val lines : t -> (Attr.t list * Utf8_text.t) list
+  val lines : t -> (Attr.t list * String.Utf8.t) list
 
   (** [wrap_lines t ~width = lines] rewraps the lines of a cell to fit within
       [width]. [wrap_lines] only adds new line breaks. *)
@@ -29,7 +29,7 @@ module type Cell = sig
     :  t
     -> width:int
     -> prefer_split_on_spaces:bool
-    -> (Attr.t list * Utf8_text.t) list
+    -> (Attr.t list * String.Utf8.t) list
 
   (** [height t ~display_empty_rows:false ~width = List.length (wrap_lines t ~width)].
 

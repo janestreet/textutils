@@ -41,12 +41,17 @@ let char t attr char ~row ~col = t.data.(row).(col) <- Char (attr, char)
 
 let string t align attr text ~row ~col ~width =
   let col =
+    let approx_display_width =
+      (* See docs for [String.Utf8.length_in_uchars] on why it is a poor proxy for display
+         width. *)
+      String.Utf8.length_in_uchars
+    in
     match (align : Column.Align.t) with
     | Left -> col
-    | Right -> col + width - Utf8_text.width text
-    | Center -> col + (max 0 (width - Utf8_text.width text) / 2)
+    | Right -> col + width - approx_display_width text
+    | Center -> col + (max 0 (width - approx_display_width text) / 2)
   in
-  Utf8_text.iteri text ~f:(fun i uchar -> char t attr uchar ~row ~col:(col + i))
+  String.Utf8.iteri text ~f:(fun i uchar -> char t attr uchar ~row ~col:(col + i))
 ;;
 
 let get_symbol t ~row ~col =
