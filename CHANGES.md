@@ -1,3 +1,7 @@
+## Release v0.17.0
+
+- Deprecate ``utf8_text` in favor of the utf8 handling in `core`. See Core.String.Utf8.
+
 ## Release v0.16.0
 
 * Can now limit the max width of a column in ascii_table
