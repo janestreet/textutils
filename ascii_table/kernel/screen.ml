@@ -19,10 +19,10 @@ let create ~rows ~cols =
 let set_screen_point t (texel : Texel.t) ~row ~col =
   let prev = t.data.(row).(col) in
   t.data.(row).(col)
-    <- (match prev, texel with
-        | Blank, _ -> Blank
-        | _, Blank -> Blank
-        | _, point -> point)
+  <- (match prev, texel with
+      | Blank, _ -> Blank
+      | _, Blank -> Blank
+      | _, point -> point)
 ;;
 
 let hline t texel ~row =

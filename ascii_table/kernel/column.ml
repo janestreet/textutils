@@ -19,8 +19,8 @@ let optional t =
   { t with
     col_func =
       (function
-       | None -> Cell.create []
-       | Some x -> t.col_func x)
+        | None -> Cell.create []
+        | Some x -> t.col_func x)
   }
 ;;
 
@@ -187,8 +187,8 @@ module Of_field = struct
       ?show
       ?header
       (function
-       | None -> ""
-       | Some x -> to_string x)
+        | None -> ""
+        | Some x -> to_string x)
       record_field
   ;;
 
@@ -208,8 +208,8 @@ module Of_field = struct
       ?show
       ?header
       (function
-       | None -> [], ""
-       | Some x -> to_string_and_attr x)
+        | None -> [], ""
+        | Some x -> to_string_and_attr x)
       record_field
   ;;
 end

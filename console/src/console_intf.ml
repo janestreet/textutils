@@ -69,13 +69,13 @@ module type Console = sig
 
   module Make (Io : Io) :
     S
-      with type 'a io := 'a Io.t
-       and type 'a io_fmt := 'a Io.fmt
-       and type out_channel := Io.out_channel
+    with type 'a io := 'a Io.t
+     and type 'a io_fmt := 'a Io.fmt
+     and type out_channel := Io.out_channel
 
   include
     S
-      with type 'a io := 'a
-       and type 'a io_fmt := ('a, Out_channel.t, unit) format
-       and type out_channel := Out_channel.t
+    with type 'a io := 'a
+     and type 'a io_fmt := ('a, Out_channel.t, unit) format
+     and type out_channel := Out_channel.t
 end

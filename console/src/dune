@@ -1,6 +1,6 @@
 (library
  (name console)
  (public_name textutils.console)
- (libraries core_kernel.ansi_kernel core core_unix.linux_ext)
+ (libraries core_kernel.ansi_kernel core core_unix core_unix.linux_ext)
  (preprocess
   (pps ppx_jane)))

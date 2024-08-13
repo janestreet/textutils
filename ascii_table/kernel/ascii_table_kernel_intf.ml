@@ -29,9 +29,9 @@ module type Ascii_table_kernel = sig
   end
 
   module Column : module type of struct
-    include Column
-  end
-  with module Private := Column.Private
+      include Column
+    end
+    with module Private := Column.Private
 
   module Screen : sig
     (** A [Screen.t] represents a table after all of the layout calculations have been done.

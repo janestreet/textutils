@@ -75,10 +75,10 @@ module Make (Io : Io) = struct
   let is_color_tty () = Io.capable ()
 
   module Columnize (In : sig
-    type t
+      type t
 
-    val length : t -> int
-  end) : sig
+      val length : t -> int
+    end) : sig
     val iter
       :  middle:(sep:In.t -> In.t -> int -> unit Io.t)
       -> last:(In.t -> int -> unit Io.t)
@@ -205,36 +205,36 @@ module Make (Io : Io) = struct
 end
 
 include Make (struct
-  include Monad.Ident
+    include Monad.Ident
 
-  type 'a fmt = ('a, Out_channel.t, unit) format
-  type out_channel = Out_channel.t
+    type 'a fmt = ('a, Out_channel.t, unit) format
+    type out_channel = Out_channel.t
 
-  let output_string = Out_channel.output_string
-  let output = Out_channel.output
-  let stderr = Out_channel.stderr
-  let stdout = Out_channel.stdout
-  let flush = Core.Out_channel.flush
-  let print_string = print_string
+    let output_string = Out_channel.output_string
+    let output = Out_channel.output
+    let stderr = Out_channel.stderr
+    let stdout = Out_channel.stdout
+    let flush = Core.Out_channel.flush
+    let print_string = print_string
 
-  (* if it's good enough for git then it's good enough for us... *)
-  let capable =
-    lazy
-      (Unix.isatty Unix.stdout
-       &&
-       match Sys.getenv "TERM" with
-       | Some "dumb" | None -> false
-       | Some _ -> true)
-  ;;
+    (* if it's good enough for git then it's good enough for us... *)
+    let capable =
+      lazy
+        (Unix.isatty Unix.stdout
+         &&
+         match Sys.getenv "TERM" with
+         | Some "dumb" | None -> false
+         | Some _ -> true)
+    ;;
 
-  let capable () = Lazy.force capable
+    let capable () = Lazy.force capable
 
-  let fprintf ~attrs channel fmt =
-    if capable () && not (String.is_empty attrs)
-    then Printf.fprintf channel ("%s" ^^ fmt ^^ "\027[0m%!") attrs
-    else Printf.fprintf channel (fmt ^^ "%!")
-  ;;
+    let fprintf ~attrs channel fmt =
+      if capable () && not (String.is_empty attrs)
+      then Printf.fprintf channel ("%s" ^^ fmt ^^ "\027[0m%!") attrs
+      else Printf.fprintf channel (fmt ^^ "%!")
+    ;;
 
-  let fold_left = List.fold_left
-  let stdout_isatty () = Unix.isatty Unix.stdout
-end)
+    let fold_left = List.fold_left
+    let stdout_isatty () = Unix.isatty Unix.stdout
+  end)
