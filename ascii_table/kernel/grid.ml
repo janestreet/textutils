@@ -63,7 +63,12 @@ let create
 
 let to_screen t ~prefer_split_on_spaces =
   assert (List.length t.data = List.length t.heights);
-  let mid_row = if [%compare.equal: Display.t] t.display Tall_box then 1 else 0 in
+  let mid_row =
+    if [%compare.equal: Display.t] t.display Tall_box
+       || [%compare.equal: Display.t] t.display Medium_box
+    then 1
+    else 0
+  in
   (* The total width of the table includes the '|'s to the left of elements, so we add 1
      and the spacing on either side when summing. *)
   let cols = list_sum t.widths ~f:(( + ) (1 + (t.spacing * 2))) + 1 in
@@ -117,6 +122,18 @@ let to_screen t ~prefer_split_on_spaces =
        then (
          if not ([%compare.equal: Display.t] t.display Blank)
          then Screen.hline screen Line ~row;
+         row + 1)
+       else if [%compare.equal: Display.t] t.display Medium_box
+       then (
+         ignore
+           (List.fold t.widths ~init:0 ~f:(fun col width ->
+              let width = width + (t.spacing * 2) in
+              let write col = Screen.set_screen_point screen texel ~row ~col in
+              write col;
+              write (col + 1);
+              write (col + width);
+              col + width + 1)
+            : int);
          row + 1)
        else row)
      : int);

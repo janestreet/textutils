@@ -48,6 +48,7 @@ module type Screen = sig
   val char : t -> Attr.t list -> Uchar.t -> row:int -> col:int -> unit
 
   val create : rows:int -> cols:int -> t
+  val set_screen_point : t -> Texel.t -> row:int -> col:int -> unit
 
   (** [hline t texel ~row] sets the entire width of [row] to [texel] *)
   val hline : t -> Texel.t -> row:int -> unit
