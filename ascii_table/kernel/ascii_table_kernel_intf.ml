@@ -15,6 +15,9 @@ module type Ascii_table_kernel = sig
     (** Default--cells can be multi-line. *)
     val short_box : t
 
+    (** Puts --- between entries, but only next to column delimiters. *)
+    val medium_box : t
+
     (** Puts --- between entries. *)
     val tall_box : t
 

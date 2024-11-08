@@ -6,6 +6,7 @@ open! Import
 module Display = struct
   type t =
     | Short_box
+    | Medium_box
     | Tall_box
     | Line
     | Blank

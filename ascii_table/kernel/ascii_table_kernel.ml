@@ -9,6 +9,7 @@ module Table_char = Table_char
 module Display = struct
   type t = Grid.Display.t =
     | Short_box
+    | Medium_box
     | Tall_box
     | Line
     | Blank
@@ -16,6 +17,7 @@ module Display = struct
   [@@deriving compare, sexp_of]
 
   let short_box = Short_box
+  let medium_box = Medium_box
   let tall_box = Tall_box
   let line = Line
   let blank = Blank
