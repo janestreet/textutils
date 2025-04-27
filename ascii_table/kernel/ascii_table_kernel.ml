@@ -83,6 +83,48 @@ let to_string_noattr
   |> Option.value ~default:""
 ;;
 
+let cols_and_data_of_strings ?(index = false) ?(max_col_width = 90) cols data =
+  let cols, data =
+    if index
+    then "#" :: cols, List.mapi data ~f:(fun i row -> Int.to_string (i + 1) :: row)
+    else cols, data
+  in
+  let cols =
+    List.mapi cols ~f:(fun i col ->
+      let col, align =
+        match String.chop_prefix col ~prefix:"-" with
+        | None -> col, Align.Right
+        | Some col -> col, Align.Left
+      in
+      Column.create ~max_width:max_col_width col (fun ls -> List.nth_exn ls i) ~align)
+  in
+  cols, data
+;;
+
+let simple_list_table_string
+  ?index
+  ?(display = Display.line)
+  ?spacing
+  ?(limit_width_to = 160)
+  ?max_col_width
+  ?(bars = `Unicode)
+  ?display_empty_rows
+  ?prefer_split_on_spaces
+  cols
+  data
+  =
+  let cols, data = cols_and_data_of_strings ?index ?max_col_width cols data in
+  to_string_noattr
+    ~display
+    ?spacing
+    ~limit_width_to
+    ?display_empty_rows
+    ?prefer_split_on_spaces
+    cols
+    data
+    ~bars
+;;
+
 module Private = struct
   module Utf8_text_chunks = Utf8_text_chunks
 end

@@ -37,8 +37,8 @@ module type Ascii_table_kernel = sig
     with module Private := Column.Private
 
   module Screen : sig
-    (** A [Screen.t] represents a table after all of the layout calculations have been done.
-    *)
+    (** A [Screen.t] represents a table after all of the layout calculations have been
+        done. *)
     type t
 
     val render
@@ -72,10 +72,23 @@ module type Ascii_table_kernel = sig
     -> ?spacing:int (** Default: 1 *)
     -> ?limit_width_to:int (** defaults to 90 characters *)
     -> ?display_empty_rows:bool (** Default: false *)
-    -> ?prefer_split_on_spaces:bool (** Default: false  *)
+    -> ?prefer_split_on_spaces:bool (** Default: false *)
     -> 'row Column.t list
     -> 'row list
     -> bars:[ `Ascii | `Unicode ]
+    -> string
+
+  val simple_list_table_string
+    :  ?index:bool
+    -> ?display:Display.t (** Default: line *)
+    -> ?spacing:int (** Default: 1 *)
+    -> ?limit_width_to:int (** defaults to 160 characters *)
+    -> ?max_col_width:int (** defaults to 90 characters *)
+    -> ?bars:[ `Ascii | `Unicode ] (** default: `Unicode *)
+    -> ?display_empty_rows:bool (** Default: false *)
+    -> ?prefer_split_on_spaces:bool (** Default: false *)
+    -> string list
+    -> string list list
     -> string
 
   module Table_char : sig
@@ -93,4 +106,13 @@ module type Ascii_table_kernel = sig
   [@@alert
     ascii_table_kernel_private
       "This module is intended only for tests of Ascii_table_kernel."]
+
+  val cols_and_data_of_strings
+    :  ?index:bool
+    -> ?max_col_width:int
+    -> string list
+    -> string list list
+    -> string list Column.t list * string list list
+  [@@alert
+    ascii_table_kernel_internal "This function is intended only for use in Ascii_table."]
 end

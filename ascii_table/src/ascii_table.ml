@@ -75,7 +75,7 @@ let to_string_noattr = to_string_gen ~string_with_attr:(fun _attrs str -> str)
 let to_string = to_string_gen ~string_with_attr:Console.Ansi.string_with_attr
 
 let simple_list_table_internal
-  ?(index = false)
+  ?index
   ?(display = Ascii_table_kernel.Display.line)
   ?spacing
   ?(limit_width_to = 160)
@@ -89,22 +89,10 @@ let simple_list_table_internal
   ~(f : (_, _) renderer)
   =
   let cols, data =
-    if index
-    then "#" :: cols, List.mapi data ~f:(fun i row -> Int.to_string (i + 1) :: row)
-    else cols, data
-  in
-  let cols =
-    List.mapi cols ~f:(fun i col ->
-      let col, align =
-        match String.chop_prefix col ~prefix:"-" with
-        | None -> col, Ascii_table_kernel.Align.Right
-        | Some col -> col, Ascii_table_kernel.Align.Left
-      in
-      Ascii_table_kernel.Column.create
-        ~max_width:max_col_width
-        col
-        (fun ls -> List.nth_exn ls i)
-        ~align)
+    let cols_and_data_of_strings =
+      Ascii_table_kernel.cols_and_data_of_strings [@alert "-ascii_table_kernel_internal"]
+    in
+    cols_and_data_of_strings ?index ~max_col_width cols data
   in
   f
     ~display

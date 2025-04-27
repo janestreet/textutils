@@ -54,15 +54,15 @@ module type S = sig
 
   val is_color_tty : unit -> bool io
 
-  (** The width in characters of the current output. Returns [`Not_a_tty] if
-      stdout is not connected to a tty.*)
+  (** The width in characters of the current output. Returns [`Not_a_tty] if stdout is not
+      connected to a tty. *)
   val width : unit -> [ `Cols of int | `Not_a_tty | `Not_available ] io
 
   (** print a list in a columnize way (like the output of ls) *)
   val print_list : out_channel -> (string * Ansi.attr list) list -> unit io
 end
 
-(** Color printing in terminals  *)
+(** Color printing in terminals *)
 module type Console = sig
   module type Io = Io
   module type S = S

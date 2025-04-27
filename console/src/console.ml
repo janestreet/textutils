@@ -1,6 +1,6 @@
 include Console_intf
 
-(** Color printing in terminals  *)
+(** Color printing in terminals *)
 open Core
 
 module Unix = Core_unix
@@ -89,9 +89,8 @@ module Make (Io : Io) = struct
   end = struct
     let lines columns a = ((Array.length a - 1) / columns) + 1
 
-    (** Size of an array printed out with this column configuration
-        (lines*chars per column)
-    *)
+    (** Size of an array printed out with this column configuration (lines*chars per
+        column) *)
     let dim columns a =
       let lines = lines columns a in
       let rec loop cnt current acc =
