@@ -34,8 +34,7 @@ module type Column = sig
     -> ('a -> string)
     -> 'a t
 
-  (** like create, except that the to_string function must provide a list of
-      attributes. *)
+  (** like create, except that the to_string function must provide a list of attributes. *)
   val create_attr
     :  ?align:Align.t (* Default: left *)
     -> ?min_width:int
@@ -45,8 +44,7 @@ module type Column = sig
     -> ('a -> Attr.t list * string)
     -> 'a t
 
-  (** like create_attr, except that you can specify many lines with different
-      attributes. *)
+  (** like create_attr, except that you can specify many lines with different attributes. *)
   val create_attrs
     :  ?align:Align.t (* Default: left *)
     -> ?min_width:int
