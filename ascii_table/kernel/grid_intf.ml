@@ -14,7 +14,7 @@ module Display = struct
   [@@deriving compare, sexp_of]
 end
 
-module type Grid = sig
+module type Grid = sig @@ portable
   module Display = Display
 
   type t [@@deriving sexp_of]

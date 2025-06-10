@@ -71,8 +71,53 @@ let to_string_gen
   | Some screen -> Screen.to_string screen ~bars ~string_with_attr
 ;;
 
-let to_string_noattr = to_string_gen ~string_with_attr:(fun _attrs str -> str)
-let to_string = to_string_gen ~string_with_attr:Console.Ansi.string_with_attr
+let to_string_noattr
+  ?display
+  ?spacing
+  ?limit_width_to
+  ?header_attr
+  ?bars
+  ?display_empty_rows
+  ?prefer_split_on_spaces
+  cols
+  data
+  =
+  to_string_gen
+    ?display
+    ?spacing
+    ?limit_width_to
+    ?header_attr
+    ?bars
+    ?display_empty_rows
+    ?prefer_split_on_spaces
+    cols
+    data
+    ~string_with_attr:(fun _attrs str -> str)
+;;
+
+let to_string
+  ?display
+  ?spacing
+  ?limit_width_to
+  ?header_attr
+  ?bars
+  ?display_empty_rows
+  ?prefer_split_on_spaces
+  cols
+  data
+  =
+  to_string_gen
+    ?display
+    ?spacing
+    ?limit_width_to
+    ?header_attr
+    ?bars
+    ?display_empty_rows
+    ?prefer_split_on_spaces
+    cols
+    data
+    ~string_with_attr:Console.Ansi.string_with_attr
+;;
 
 let simple_list_table_internal
   ?index
@@ -106,5 +151,59 @@ let simple_list_table_internal
     data
 ;;
 
-let simple_list_table ?(oc = stdout) = simple_list_table_internal ~f:(output ~oc)
-let simple_list_table_string = simple_list_table_internal ~f:to_string
+let simple_list_table
+  ?(oc = stdout)
+  ?index
+  ?display
+  ?spacing
+  ?limit_width_to
+  ?max_col_width
+  ?header_attr
+  ?bars
+  ?display_empty_rows
+  ?prefer_split_on_spaces
+  cols
+  data
+  =
+  simple_list_table_internal
+    ?index
+    ?display
+    ?spacing
+    ?limit_width_to
+    ?max_col_width
+    ?header_attr
+    ?bars
+    ?display_empty_rows
+    ?prefer_split_on_spaces
+    cols
+    data
+    ~f:(output ~oc)
+;;
+
+let simple_list_table_string
+  ?index
+  ?display
+  ?spacing
+  ?limit_width_to
+  ?max_col_width
+  ?header_attr
+  ?bars
+  ?display_empty_rows
+  ?prefer_split_on_spaces
+  cols
+  data
+  =
+  simple_list_table_internal
+    ?index
+    ?display
+    ?spacing
+    ?limit_width_to
+    ?max_col_width
+    ?header_attr
+    ?bars
+    ?display_empty_rows
+    ?prefer_split_on_spaces
+    cols
+    data
+    ~f:to_string
+;;

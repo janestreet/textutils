@@ -13,7 +13,7 @@ module Texel = struct
   [@@deriving compare, sexp_of]
 end
 
-module type Screen = sig
+module type Screen = sig @@ portable
   type t [@@deriving sexp_of]
 
   val to_string

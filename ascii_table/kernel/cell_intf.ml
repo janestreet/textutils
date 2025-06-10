@@ -6,7 +6,7 @@
 open! Core
 open! Import
 
-module type Cell = sig
+module type Cell = sig @@ portable
   type t [@@deriving sexp_of]
 
   val create : (Attr.t list * string) list -> t

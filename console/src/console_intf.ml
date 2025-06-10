@@ -49,7 +49,7 @@ module type S = sig
 
     (* Create string with embedded formatting codes *)
 
-    val string_with_attr : attr list -> string -> string
+    val string_with_attr : attr list -> string -> string @@ portable
   end
 
   val is_color_tty : unit -> bool io

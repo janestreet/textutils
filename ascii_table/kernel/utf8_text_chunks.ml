@@ -38,7 +38,7 @@ let of_utf8 utf8 ~width ~prefer_split_on_spaces =
               match Uchar.equal space_uchar uchar with
               | true -> (start_pos + assumed_width_per_uchar) :: acc
               | false -> acc)
-            |> Set.of_list (module Int)
+            |> Int.Set.of_list
           in
           fun uchars_left ->
             List.take uchars_left width

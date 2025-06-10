@@ -5,12 +5,12 @@ open! Import
    in the text is comprised of only one Unicode scalar value. If this is not the case, the
    width calculations will be incorrect. *)
 
-module type Ascii_table_kernel = sig
+module type Ascii_table_kernel = sig @@ portable
   module Attr = Attr
   module Align = Column.Align
 
   module Display : sig
-    type t
+    type t : immutable_data
 
     (** Default--cells can be multi-line. *)
     val short_box : t

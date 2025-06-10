@@ -1,3 +1,5 @@
+@@ portable
+
 open! Core
 
 (** [of_utf8 utf8 ~width ~prefer_split_on_spaces] splits [utf8] into chunks no wider than

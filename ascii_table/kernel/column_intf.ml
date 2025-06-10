@@ -18,7 +18,7 @@ module Show = struct
   [@@deriving sexp_of]
 end
 
-module type Column = sig
+module type Column = sig @@ portable
   module Align = Align
   module Show = Show
 
