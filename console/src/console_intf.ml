@@ -1,9 +1,10 @@
 open! Core
 
-module type Io = sig
+module type%template
+  [@modality (p, c) = ((nonportable, uncontended), (portable, contended))] Io = sig
   type 'a t
   type 'a fmt
-  type out_channel
+  type out_channel : value mod c p
 
   include Monad.S with type 'a t := 'a t
 
@@ -63,11 +64,11 @@ module type S = sig
 end
 
 (** Color printing in terminals *)
-module type Console = sig
+module type Console = sig @@ portable
   module type Io = Io
   module type S = S
 
-  module Make (Io : Io) :
+  module%template.portable [@modality p] Make (Io : Io [@modality p]) :
     S
     with type 'a io := 'a Io.t
      and type 'a io_fmt := 'a Io.fmt

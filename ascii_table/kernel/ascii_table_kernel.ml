@@ -14,7 +14,7 @@ module Display = struct
     | Line
     | Blank
     | Column_titles
-  [@@deriving compare, sexp_of]
+  [@@deriving compare ~localize, sexp_of]
 
   let short_box = Short_box
   let medium_box = Medium_box

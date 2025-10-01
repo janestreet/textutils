@@ -11,7 +11,7 @@ module Display = struct
     | Line
     | Blank
     | Column_titles
-  [@@deriving compare, sexp_of]
+  [@@deriving compare ~localize, sexp_of]
 end
 
 module type Grid = sig @@ portable
