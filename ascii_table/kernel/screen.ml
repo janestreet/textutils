@@ -7,7 +7,7 @@ type t =
   ; rows : int
   ; cols : int
   }
-[@@deriving compare, sexp_of]
+[@@deriving compare ~localize, sexp_of]
 
 let create ~rows ~cols =
   let data =

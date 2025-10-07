@@ -6,7 +6,7 @@ open Core
 module Unix = Core_unix
 open Poly
 
-module Make (Io : Io) = struct
+module%template.portable [@modality p] Make (Io : Io [@modality p]) = struct
   (* http://www.termsys.demon.co.uk/vtansi.htm *)
   module Ansi = struct
     let kill_line () = Io.print_string "\027[2K"
@@ -203,7 +203,7 @@ module Make (Io : Io) = struct
   ;;
 end
 
-include Make (struct
+include%template Make [@modality portable] (struct
     include Monad.Ident
 
     type 'a fmt = ('a, Out_channel.t, unit) format
@@ -218,15 +218,15 @@ include Make (struct
 
     (* if it's good enough for git then it's good enough for us... *)
     let capable =
-      lazy
-        (Unix.isatty Unix.stdout
-         &&
-         match Sys.getenv "TERM" with
-         | Some "dumb" | None -> false
-         | Some _ -> true)
+      Portable_lazy.from_fun (fun () ->
+        Unix.isatty Unix.stdout
+        &&
+        match Sys.getenv "TERM" with
+        | Some "dumb" | None -> false
+        | Some _ -> true)
     ;;
 
-    let capable () = Lazy.force capable
+    let capable () = Portable_lazy.force capable
 
     let fprintf ~attrs channel fmt =
       if capable () && not (String.is_empty attrs)
