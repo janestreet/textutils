@@ -41,7 +41,7 @@ let create
   let filter l = List.filter_opt (List.map2_exn keep l ~f:Option.some_if) in
   let cols = filter cols in
   let body = List.map body ~f:filter in
-  (* We subtract 1 from max_width because later we're going to add a line of
+  (*=We subtract 1 from max_width because later we're going to add a line of
      '|'s to form the right wall of the table. *)
   let widths = Column.Private.layout cols raw_data ~spacing ~max_width:(max_width - 1) in
   let grid_data =
@@ -69,7 +69,7 @@ let to_screen t ~prefer_split_on_spaces =
     then 1
     else 0
   in
-  (* The total width of the table includes the '|'s to the left of elements, so we add 1
+  (*=The total width of the table includes the '|'s to the left of elements, so we add 1
      and the spacing on either side when summing. *)
   let cols = list_sum t.widths ~f:(( + ) (1 + (t.spacing * 2))) + 1 in
   let rows = list_sum t.heights ~f:(( + ) mid_row) + 3 - (2 * mid_row) in

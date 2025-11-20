@@ -49,7 +49,7 @@ let create_attrs
   ; header = String.Utf8.of_string str
   ; col_func = (fun x -> Cell.create (parse_func x))
   ; align
-  ; (* We add one for the '|' on the left. *)
+  ; (*=We add one for the '|' on the left. *)
     min_width = Option.map min_width ~f:(( + ) 1)
   ; show
   }
@@ -70,12 +70,12 @@ let update_show ~f t = { t with show = f t.show }
 let desired_width ~spacing data t =
   let column_data = List.map data ~f:t.col_func in
   let header_width =
-    (* See docs for [String.Utf8.length_in_uchars] on the limitations of assuming
-       that the width per uchar is 1. *)
+    (* See docs for [String.Utf8.length_in_uchars] on the limitations of assuming that the
+       width per uchar is 1. *)
     String.Utf8.split t.header ~on:(Uchar.of_char '\n')
     |> list_max ~f:String.Utf8.length_in_uchars
   in
-  (* We need to account for the '|' to the left, so we add 1 plus the spacing
+  (*=We need to account for the '|' to the left, so we add 1 plus the spacing
      on either side. *)
   1
   + (2 * spacing)
@@ -87,8 +87,8 @@ let desired_width ~spacing data t =
 let layout ts data ~spacing ~max_width:table_width =
   let desired_widths = List.map ts ~f:(desired_width ~spacing data) in
   let all_min_width = List.filter_map ts ~f:(fun t -> t.min_width) in
-  (* [generic_min_chars] = minimum number of characters for a column that doesn't have
-     an [min_width] value. *)
+  (* [generic_min_chars] = minimum number of characters for a column that doesn't have an
+     [min_width] value. *)
   let table_constraints_are_impossible, generic_min_chars =
     let columns_with_no_min_width = List.length ts - List.length all_min_width in
     if Int.( <> ) 0 columns_with_no_min_width (* need to avoid a divide-by-zero *)
@@ -101,8 +101,8 @@ let layout ts data ~spacing ~max_width:table_width =
       let min_total = List.fold ~init:0 all_min_width ~f:Int.( + ) in
       let extra_per_col = 1 + 1 + (spacing * 2) in
       let impossible = table_width < min_total + (List.length ts * extra_per_col) in
-      (* the zero is a nonsense value, but we only generate it when every column has a
-         min width and therefore this zero will never be used. *)
+      (* the zero is a nonsense value, but we only generate it when every column has a min
+         width and therefore this zero will never be used. *)
       impossible, 0)
   in
   if table_constraints_are_impossible
@@ -116,8 +116,8 @@ let layout ts data ~spacing ~max_width:table_width =
          });
   let left = ref (list_sum ~f:Fn.id desired_widths - table_width) in
   let stop = ref false in
-  (* This layout algorithm looks unbearably inefficient, but it's
-     simple and works reasonably well in the common case. *)
+  (* This layout algorithm looks unbearably inefficient, but it's simple and works
+     reasonably well in the common case. *)
   let rec decide_widths desired_widths =
     if !stop
     then desired_widths
@@ -144,7 +144,7 @@ let layout ts data ~spacing ~max_width:table_width =
            | None -> width
            | Some min_width -> max width min_width)))
   in
-  (* The widths used in [loop] include the '|' to the left of each element,
+  (*=The widths used in [loop] include the '|' to the left of each element,
      which isn't important after layout, so we subtract off 1 and the spacing
      on either side. *)
   List.map ~f:(fun x -> x - (1 + (spacing * 2))) (decide_widths desired_widths)
