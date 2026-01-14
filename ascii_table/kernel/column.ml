@@ -29,14 +29,6 @@ let to_data t a =
   List.map tuples ~f:(fun (attrs, line) -> attrs, String.Utf8.to_string line)
 ;;
 
-type constraints =
-  { total_width : int
-  ; min_widths : (String.Utf8.t * int) list
-  }
-[@@deriving sexp_of]
-
-exception Impossible_table_constraints of constraints [@@deriving sexp_of]
-
 let create_attrs
   ?(align = Align.Left)
   ?min_width
@@ -75,79 +67,26 @@ let desired_width ~spacing data t =
     String.Utf8.split t.header ~on:(Uchar.of_char '\n')
     |> list_max ~f:String.Utf8.length_in_uchars
   in
-  (*=We need to account for the '|' to the left, so we add 1 plus the spacing
-     on either side. *)
-  1
-  + (2 * spacing)
-  + min
-      (t.max_width - (2 * spacing))
-      (max header_width (list_max column_data ~f:Cell.width))
+  min
+    (t.max_width - (2 * spacing))
+    (max header_width (list_max column_data ~f:Cell.width))
 ;;
 
 let layout ts data ~spacing ~max_width:table_width =
-  let desired_widths = List.map ts ~f:(desired_width ~spacing data) in
-  let all_min_width = List.filter_map ts ~f:(fun t -> t.min_width) in
-  (* [generic_min_chars] = minimum number of characters for a column that doesn't have an
-     [min_width] value. *)
-  let table_constraints_are_impossible, generic_min_chars =
-    let columns_with_no_min_width = List.length ts - List.length all_min_width in
-    if Int.( <> ) 0 columns_with_no_min_width (* need to avoid a divide-by-zero *)
-    then (
-      let width = table_width - list_sum all_min_width ~f:Fn.id in
-      let generic_min_chars = width / columns_with_no_min_width in
-      let impossible = generic_min_chars < 1 + (1 + (spacing * 2)) in
-      impossible, generic_min_chars)
-    else (
-      let min_total = List.fold ~init:0 all_min_width ~f:Int.( + ) in
-      let extra_per_col = 1 + 1 + (spacing * 2) in
-      let impossible = table_width < min_total + (List.length ts * extra_per_col) in
-      (* the zero is a nonsense value, but we only generate it when every column has a min
-         width and therefore this zero will never be used. *)
-      impossible, 0)
+  let n = List.length ts in
+  let extra = 1 (* left delimiter *) + (spacing * 2) in
+  let max_width = table_width - (n * extra) in
+  let requests =
+    let%map.List t = ts in
+    { Layout.Request.label = t.header
+    ; desired_width = desired_width ~spacing data t
+    ; min_width =
+        (match t.min_width with
+         | None -> Null
+         | Some x -> This (x - extra))
+    }
   in
-  if table_constraints_are_impossible
-  then
-    raise
-      (Impossible_table_constraints
-         { total_width = table_width + 1
-         ; min_widths =
-             List.filter_map ts ~f:(fun t ->
-               Option.map t.min_width ~f:(fun min_width -> t.header, min_width))
-         });
-  let left = ref (list_sum ~f:Fn.id desired_widths - table_width) in
-  let stop = ref false in
-  (* This layout algorithm looks unbearably inefficient, but it's simple and works
-     reasonably well in the common case. *)
-  let rec decide_widths desired_widths =
-    if !stop
-    then desired_widths
-    else (
-      stop := true;
-      assert (List.length ts = List.length desired_widths);
-      decide_widths
-        (List.map2_exn ts desired_widths ~f:(fun t column_width ->
-           let min_chars =
-             match t.min_width with
-             | Some x -> x
-             | None -> generic_min_chars
-           in
-           let width =
-             if column_width <= min_chars || !left <= 0
-             then column_width
-             else (
-               left := !left - 1;
-               stop := false;
-               column_width - 1)
-           in
-           (* Respect [min_width], if specified. *)
-           match t.min_width with
-           | None -> width
-           | Some min_width -> max width min_width)))
-  in
-  (*=The widths used in [loop] include the '|' to the left of each element,
-     which isn't important after layout, so we subtract off 1 and the spacing
-     on either side. *)
-  List.map ~f:(fun x -> x - (1 + (spacing * 2))) (decide_widths desired_widths)
+  Layout.compute ~max_width requests
 ;;
 
 module Of_field = struct
