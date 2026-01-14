@@ -71,6 +71,7 @@ module type Ascii_table_kernel = sig
     :  ?display:Display.t (** Default: short_box *)
     -> ?spacing:int (** Default: 1 *)
     -> ?limit_width_to:int (** defaults to 90 characters *)
+    -> ?header_attr:Attr.t list (** defaults to empty list *)
     -> ?display_empty_rows:bool (** Default: false *)
     -> ?prefer_split_on_spaces:bool (** Default: false *)
     -> 'row Column.t list
@@ -84,6 +85,7 @@ module type Ascii_table_kernel = sig
     -> ?spacing:int (** Default: 1 *)
     -> ?limit_width_to:int (** defaults to 160 characters *)
     -> ?max_col_width:int (** defaults to 90 characters *)
+    -> ?header_attr:Attr.t list (** defaults to empty list *)
     -> ?bars:[ `Ascii | `Unicode ] (** default: `Unicode *)
     -> ?display_empty_rows:bool (** Default: false *)
     -> ?prefer_split_on_spaces:bool (** Default: false *)

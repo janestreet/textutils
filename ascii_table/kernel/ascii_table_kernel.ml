@@ -64,6 +64,7 @@ let to_string_noattr
   ?display
   ?spacing
   ?limit_width_to
+  ?header_attr
   ?display_empty_rows
   ?(prefer_split_on_spaces = false)
   cols
@@ -74,8 +75,8 @@ let to_string_noattr
     ?display
     ?spacing
     ?limit_width_to
+    ?header_attr
     ?display_empty_rows
-    ~header_attr:[]
     cols
     data
     ~prefer_split_on_spaces
@@ -107,6 +108,7 @@ let simple_list_table_string
   ?spacing
   ?(limit_width_to = 160)
   ?max_col_width
+  ?header_attr
   ?(bars = `Unicode)
   ?display_empty_rows
   ?prefer_split_on_spaces
@@ -118,6 +120,7 @@ let simple_list_table_string
     ~display
     ?spacing
     ~limit_width_to
+    ?header_attr
     ?display_empty_rows
     ?prefer_split_on_spaces
     cols
