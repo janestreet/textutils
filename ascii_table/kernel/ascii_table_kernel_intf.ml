@@ -111,6 +111,7 @@ module type Ascii_table_kernel = sig @@ portable
 
   val cols_and_data_of_strings
     :  ?index:bool
+    -> ?min_col_width:int
     -> ?max_col_width:int
     -> string list
     -> string list list

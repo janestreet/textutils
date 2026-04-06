@@ -33,6 +33,7 @@ type 'rest simple_list :=
   -> ?display:Display.t (** default: line *)
   -> ?spacing:int
   -> ?limit_width_to:int (** default: 160 *)
+  -> ?min_col_width:int (** default: none *)
   -> ?max_col_width:int (** default: 90 *)
   -> ?header_attr:Attr.t list
   -> ?bars:[ `Ascii | `Unicode ]
