@@ -47,17 +47,20 @@ let draw
   match cols with
   | [] -> None
   | _ :: _ ->
-    Some
-      (Grid.create
-         ~spacing
-         ~display
-         ~max_width:limit_width_to
-         ~header_attr
-         cols
-         data
-         ~display_empty_rows
-         ~prefer_split_on_spaces
-       |> Grid.to_screen ~prefer_split_on_spaces)
+    let grid =
+      Grid.create
+        ~spacing
+        ~display
+        ~max_width:limit_width_to
+        ~header_attr
+        cols
+        data
+        ~display_empty_rows
+        ~prefer_split_on_spaces
+    in
+    if Grid.is_empty grid
+    then None
+    else Some (Grid.to_screen grid ~prefer_split_on_spaces)
 ;;
 
 let to_string_noattr

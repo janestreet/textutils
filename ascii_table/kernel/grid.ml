@@ -7,10 +7,26 @@ type t =
   ; heights : int list
   ; widths : int list
   ; aligns : Column.Align.t list
+  ; left_boundary : bool
+  ; interior_boundaries : bool list
+  ; right_boundary : bool
   ; spacing : int
   ; display : Display.t
   }
 [@@deriving sexp_of]
+
+let adjacent_pairs ts =
+  let rec loop acc = function
+    | left :: (right :: _ as rest) -> loop ((left, right) :: acc) rest
+    | _ -> List.rev acc
+  in
+  loop [] ts
+;;
+
+let interior_boundaries_of_cols cols =
+  List.map (adjacent_pairs cols) ~f:(fun (left, right) ->
+    Column.Private.right_boundary left || Column.Private.left_boundary right)
+;;
 
 let create
   cols
@@ -58,8 +74,26 @@ let create
         |> list_max ~f:Fn.id)
   in
   let aligns = List.map cols ~f:Column.align in
-  { data = grid_data; heights; widths; aligns; spacing; display }
+  let left_boundary =
+    Option.value_map (List.hd cols) ~default:true ~f:Column.Private.left_boundary
+  in
+  let interior_boundaries = interior_boundaries_of_cols cols in
+  let right_boundary =
+    Option.value_map (List.last cols) ~default:true ~f:Column.Private.right_boundary
+  in
+  { data = grid_data
+  ; heights
+  ; widths
+  ; aligns
+  ; left_boundary
+  ; interior_boundaries
+  ; right_boundary
+  ; spacing
+  ; display
+  }
 ;;
+
+let is_empty t = List.is_empty t.widths
 
 let to_screen t ~prefer_split_on_spaces =
   assert (List.length t.data = List.length t.heights);
@@ -81,12 +115,19 @@ let to_screen t ~prefer_split_on_spaces =
   Screen.hline screen texel ~row:(rows - 1);
   if not ([%compare.equal: Display.t] t.display Blank)
   then (
-    Screen.vline screen texel ~col:0;
+    if t.left_boundary then Screen.vline screen texel ~col:0;
     ignore
-      (List.fold t.widths ~init:0 ~f:(fun col width ->
-         let col = col + 1 + width + (t.spacing * 2) in
-         Screen.vline screen texel ~col;
-         col)
+      (List.fold2_exn
+         t.widths
+         ((* This list represents whether to draw a right boundary for the given column,
+             which is why we append [t.right_boundary] to the end. *)
+          t.interior_boundaries
+          @ [ t.right_boundary ])
+         ~init:0
+         ~f:(fun col width right_boundary ->
+           let col = col + 1 + width + (t.spacing * 2) in
+           if right_boundary then Screen.vline screen texel ~col;
+           col)
        : int));
   ignore
     (List.fold2_exn t.data t.heights ~init:1 ~f:(fun row row_elements height ->
@@ -125,14 +166,23 @@ let to_screen t ~prefer_split_on_spaces =
          row + 1)
        else if [%compare.equal: Display.t] t.display Medium_box
        then (
+         let boundaries =
+           (t.left_boundary :: t.interior_boundaries) @ [ t.right_boundary ]
+         in
          ignore
-           (List.fold t.widths ~init:0 ~f:(fun col width ->
-              let width = width + (t.spacing * 2) in
-              let write col = Screen.set_screen_point screen texel ~row ~col in
-              write col;
-              write (col + 1);
-              write (col + width);
-              col + width + 1)
+           (List.fold2_exn
+              t.widths
+              (adjacent_pairs boundaries)
+              ~init:0
+              ~f:(fun col width (left_boundary, right_boundary) ->
+                let width = width + (t.spacing * 2) in
+                let write col = Screen.set_screen_point screen texel ~row ~col in
+                if left_boundary
+                then (
+                  write col;
+                  write (col + 1));
+                if right_boundary then write (col + width);
+                col + width + 1)
             : int);
          row + 1)
        else row)
