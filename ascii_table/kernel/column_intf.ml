@@ -24,12 +24,18 @@ module type Column = sig @@ portable
 
   type 'a t [@@deriving sexp_of]
 
-  (** creates a column given the header and the to-string function *)
+  (** creates a column given the header and the to-string function.
+
+      NOTE: the boundary between columns [x] and [y] is drawn iff
+      [x.right_boundary || y.left_boundary]. For columns on the edge, [left_boundary] and
+      [right_boundary] dictate whether the edge of the table is drawn. *)
   val create
     :  ?align:Align.t (* Default: left *)
     -> ?min_width:int
     -> ?max_width:int
     -> ?show:[ `Yes | `No | `If_not_empty ] (* Default: `Yes *)
+    -> ?left_boundary:bool (* Default: true *)
+    -> ?right_boundary:bool (* Default: true *)
     -> string
     -> ('a -> string)
     -> 'a t
@@ -40,6 +46,8 @@ module type Column = sig @@ portable
     -> ?min_width:int
     -> ?max_width:int
     -> ?show:[ `Yes | `No | `If_not_empty ] (* Default: `Yes *)
+    -> ?left_boundary:bool (* Default: true *)
+    -> ?right_boundary:bool (* Default: true *)
     -> string
     -> ('a -> Attr.t list * string)
     -> 'a t
@@ -50,6 +58,8 @@ module type Column = sig @@ portable
     -> ?min_width:int
     -> ?max_width:int
     -> ?show:[ `Yes | `No | `If_not_empty ] (* Default: `Yes *)
+    -> ?left_boundary:bool (* Default: true *)
+    -> ?right_boundary:bool (* Default: true *)
     -> string
     -> ('a -> (Attr.t list * string) list)
     -> 'a t
@@ -73,6 +83,8 @@ module type Column = sig @@ portable
       -> ?min_width:int
       -> ?max_width:int
       -> ?show:[ `Yes | `No | `If_not_empty ]
+      -> ?left_boundary:bool
+      -> ?right_boundary:bool
       -> ?header:string (** Defaults to field name *)
       -> ('field -> string)
       -> ('record, 'field) Field.t
@@ -84,6 +96,8 @@ module type Column = sig @@ portable
       -> ?min_width:int
       -> ?max_width:int
       -> ?show:[ `Yes | `No | `If_not_empty ]
+      -> ?left_boundary:bool
+      -> ?right_boundary:bool
       -> ?header:string (** Defaults to field name *)
       -> ('field -> Attr.t list * string)
       -> ('record, 'field) Field.t
@@ -95,6 +109,8 @@ module type Column = sig @@ portable
       -> ?min_width:int
       -> ?max_width:int
       -> ?show:[ `Yes | `No | `If_not_empty ]
+      -> ?left_boundary:bool
+      -> ?right_boundary:bool
       -> ?header:string (** Defaults to field name *)
       -> ('field -> string)
       -> ('record, 'field option) Field.t
@@ -106,6 +122,8 @@ module type Column = sig @@ portable
       -> ?min_width:int
       -> ?max_width:int
       -> ?show:[ `Yes | `No | `If_not_empty ]
+      -> ?left_boundary:bool
+      -> ?right_boundary:bool
       -> ?header:string (** Defaults to field name *)
       -> ('field -> Attr.t list * string)
       -> ('record, 'field option) Field.t
@@ -122,5 +140,7 @@ module type Column = sig @@ portable
     val layout : 'a t list -> 'a list -> spacing:int -> max_width:int -> int list
 
     val to_cell : 'a t -> value:'a -> Cell.t
+    val left_boundary : _ t -> bool
+    val right_boundary : _ t -> bool
   end
 end

@@ -30,5 +30,6 @@ module type Grid = sig @@ portable
     -> prefer_split_on_spaces:bool
     -> t
 
+  val is_empty : t -> bool
   val to_screen : t -> prefer_split_on_spaces:bool -> Screen.t
 end

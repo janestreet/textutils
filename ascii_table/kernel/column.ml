@@ -9,6 +9,8 @@ type 'a t =
   ; align : Align.t
   ; min_width : int option
   ; show : Show.t
+  ; left_boundary : bool
+  ; right_boundary : bool
   }
 [@@deriving fields ~getters, sexp_of]
 
@@ -34,6 +36,8 @@ let create_attrs
   ?min_width
   ?(max_width = 90)
   ?(show = `Yes)
+  ?(left_boundary = true)
+  ?(right_boundary = true)
   str
   parse_func
   =
@@ -44,15 +48,51 @@ let create_attrs
   ; (*=We add one for the '|' on the left. *)
     min_width = Option.map min_width ~f:(( + ) 1)
   ; show
+  ; left_boundary
+  ; right_boundary
   }
 ;;
 
-let create_attr ?align ?min_width ?max_width ?show str parse_func =
-  create_attrs ?align ?min_width ?max_width ?show str (fun x -> [ parse_func x ])
+let create_attr
+  ?align
+  ?min_width
+  ?max_width
+  ?show
+  ?left_boundary
+  ?right_boundary
+  str
+  parse_func
+  =
+  create_attrs
+    ?align
+    ?min_width
+    ?max_width
+    ?show
+    ?left_boundary
+    ?right_boundary
+    str
+    (fun x -> [ parse_func x ])
 ;;
 
-let create ?align ?min_width ?max_width ?show str parse_func =
-  create_attrs ?align ?min_width ?max_width ?show str (fun x -> [ [], parse_func x ])
+let create
+  ?align
+  ?min_width
+  ?max_width
+  ?show
+  ?left_boundary
+  ?right_boundary
+  str
+  parse_func
+  =
+  create_attrs
+    ?align
+    ?min_width
+    ?max_width
+    ?show
+    ?left_boundary
+    ?right_boundary
+    str
+    (fun x -> [ [], parse_func x ])
 ;;
 
 let to_cell t ~value = t.col_func value
@@ -90,12 +130,24 @@ let layout ts data ~spacing ~max_width:table_width =
 ;;
 
 module Of_field = struct
-  let field ?align ?min_width ?max_width ?show ?header to_string record_field =
+  let field
+    ?align
+    ?min_width
+    ?max_width
+    ?show
+    ?left_boundary
+    ?right_boundary
+    ?header
+    to_string
+    record_field
+    =
     create
       ?align
       ?min_width
       ?max_width
       ?show
+      ?left_boundary
+      ?right_boundary
       (Option.value header ~default:(Field.name record_field))
       (fun record -> to_string (Field.get record_field record))
   ;;
@@ -105,6 +157,8 @@ module Of_field = struct
     ?min_width
     ?max_width
     ?show
+    ?left_boundary
+    ?right_boundary
     ?header
     to_string_and_attr
     record_field
@@ -114,16 +168,30 @@ module Of_field = struct
       ?min_width
       ?max_width
       ?show
+      ?left_boundary
+      ?right_boundary
       (Option.value header ~default:(Field.name record_field))
       (fun record -> to_string_and_attr (Field.get record_field record))
   ;;
 
-  let field_opt ?align ?min_width ?max_width ?show ?header to_string record_field =
+  let field_opt
+    ?align
+    ?min_width
+    ?max_width
+    ?show
+    ?left_boundary
+    ?right_boundary
+    ?header
+    to_string
+    record_field
+    =
     field
       ?align
       ?min_width
       ?max_width
       ?show
+      ?left_boundary
+      ?right_boundary
       ?header
       (function
         | None -> ""
@@ -136,6 +204,8 @@ module Of_field = struct
     ?min_width
     ?max_width
     ?show
+    ?left_boundary
+    ?right_boundary
     ?header
     to_string_and_attr
     record_field
@@ -145,6 +215,8 @@ module Of_field = struct
       ?min_width
       ?max_width
       ?show
+      ?left_boundary
+      ?right_boundary
       ?header
       (function
         | None -> [], ""
@@ -156,4 +228,6 @@ end
 module Private = struct
   let layout = layout
   let to_cell = to_cell
+  let left_boundary = left_boundary
+  let right_boundary = right_boundary
 end

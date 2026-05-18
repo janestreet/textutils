@@ -43,13 +43,25 @@ module type S = sig
 
     type attr = Ansi_kernel.Attr.t
 
+    (** [printf] and [eprintf] do not emit OSC 8 hyperlink escapes: any [`Url _]
+        attributes in [style] are silently dropped. Use [string_with_attr] or
+        [output_string] if you need hyperlink support. *)
+
     val printf : attr list -> 'a io_fmt -> 'a
     val eprintf : attr list -> 'a io_fmt -> 'a
+
+    (** [output_string] and [output] honor [`Url _] attrs by wrapping the output in OSC 8
+        hyperlink escapes when the terminal is color-capable. *)
+
     val output_string : attr list -> out_channel -> string -> unit io
     val output : attr list -> out_channel -> Bytes.t -> int -> int -> unit io
 
-    (* Create string with embedded formatting codes *)
+    (** Create a string with embedded SGR and OSC 8 formatting codes.
 
+        See {!Ansi_kernel.Attr.t} for the semantics of each attribute; in particular,
+        [`Url _] wraps [string] in an OSC 8 hyperlink escape.
+
+        Raises if the URL contains control characters. *)
     val string_with_attr : attr list -> string -> string @@ portable
   end
 

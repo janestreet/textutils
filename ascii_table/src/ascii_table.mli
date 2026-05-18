@@ -27,6 +27,9 @@ val output : (_, oc:Out_channel.t -> unit) renderer @@ nonportable
 val to_string_noattr : (_, string) renderer
 val to_string : (_, string) renderer
 
+(** [default_max_col_width] is 90 *)
+val default_max_col_width : int
+
 (** [simple_list] has the same defaults as renderer unless specified *)
 type 'rest simple_list :=
   ?index:bool
@@ -34,7 +37,7 @@ type 'rest simple_list :=
   -> ?spacing:int
   -> ?limit_width_to:int (** default: 160 *)
   -> ?min_col_width:int (** default: none *)
-  -> ?max_col_width:int (** default: 90 *)
+  -> ?max_col_width:int (** default: [default_max_col_width] *)
   -> ?header_attr:Attr.t list
   -> ?bars:[ `Ascii | `Unicode ]
   -> ?display_empty_rows:bool

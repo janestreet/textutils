@@ -119,13 +119,15 @@ let to_string
     ~string_with_attr:Console.Ansi.string_with_attr
 ;;
 
+let default_max_col_width = 90
+
 let simple_list_table_internal
   ?index
   ?(display = Ascii_table_kernel.Display.line)
   ?spacing
   ?(limit_width_to = 160)
   ?min_col_width
-  ?(max_col_width = 90)
+  ?(max_col_width = default_max_col_width)
   ?header_attr
   ?bars
   ?display_empty_rows

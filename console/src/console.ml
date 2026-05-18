@@ -28,15 +28,63 @@ module%template.portable [@modality p] Make (Io : Io [@modality p]) = struct
 
     type attr = Attr.t
 
+    (* Validate a URL before embedding it in an OSC 8 hyperlink escape.
+
+       Control characters (ESC, BEL, and the other C0 controls, plus DEL) prematurely
+       terminate the escape sequence, so we reject them rather than produce garbled
+       terminal output. *)
+    let validate_osc8_url url =
+      String.iter url ~f:(fun c ->
+        let code = Char.to_int c in
+        if code < 0x20 || code = 0x7F
+        then
+          raise_s
+            [%message
+              "Console.Ansi: `Url URL contains a control character" (url : string)])
+    ;;
+
+    (* When multiple [`Url _] attrs are supplied for the same span, only the last is
+       honored; subsequent [`Url _]s are silently dropped. This matches the contract
+       documented on [Ansi_kernel.Attr.t]. *)
+    let style_prefix_and_suffix (style : attr list) =
+      let sgr_style =
+        List.filter style ~f:(function
+          | `Url _ -> false
+          | _ -> true)
+      in
+      let sgr_prefix, sgr_suffix =
+        match sgr_style with
+        | [] -> "", ""
+        | _ :: _ ->
+          ( All_attr.list_to_string (sgr_style :> All_attr.t list)
+          , All_attr.list_to_string [ `Reset ] )
+      in
+      let href =
+        style
+        |> List.rev
+        |> List.find_map ~f:(function
+          | `Url url -> Some url
+          | _ -> None)
+      in
+      let osc8_prefix, osc8_suffix =
+        match href with
+        | None -> "", ""
+        | Some url ->
+          validate_osc8_url url;
+          (* Even though the spec says the url is supplied "in URI-encoded form", that
+             doesn't mean anything. There's no extra layer of encoding. *)
+          String.concat [ "\027]8;;"; url; "\027\\" ], "\027]8;;\027\\"
+      in
+      (* Nest SGR inside OSC 8: open link, apply color, text, close color, close link. *)
+      osc8_prefix ^ sgr_prefix, sgr_suffix ^ osc8_suffix
+    ;;
+
     let string_with_attr style string =
       if style = []
       then string
-      else
-        String.concat
-          [ All_attr.list_to_string (style :> All_attr.t list)
-          ; string
-          ; All_attr.list_to_string [ `Reset ]
-          ]
+      else (
+        let prefix, suffix = style_prefix_and_suffix style in
+        String.concat [ prefix; string; suffix ])
     ;;
 
     let output (style : attr list) oc s start len =
@@ -44,9 +92,10 @@ module%template.portable [@modality p] Make (Io : Io [@modality p]) = struct
       let%bind capable = Io.capable () in
       if capable && style <> []
       then (
-        Io.output_string oc (All_attr.list_to_string (style :> All_attr.t list));
+        let prefix, suffix = style_prefix_and_suffix style in
+        Io.output_string oc prefix;
         Io.output oc ~buf:s ~pos:start ~len;
-        Io.output_string oc (All_attr.list_to_string [ `Reset ]);
+        Io.output_string oc suffix;
         Io.flush oc)
       else Io.return (Io.output oc ~buf:s ~pos:start ~len)
     ;;
@@ -56,19 +105,35 @@ module%template.portable [@modality p] Make (Io : Io [@modality p]) = struct
       let%bind capable = Io.capable () in
       if capable && style <> []
       then (
-        Io.output_string oc (All_attr.list_to_string (style :> All_attr.t list));
+        let prefix, suffix = style_prefix_and_suffix style in
+        Io.output_string oc prefix;
         Io.output_string oc s;
-        Io.output_string oc (All_attr.list_to_string [ `Reset ]);
+        Io.output_string oc suffix;
         Io.flush oc)
       else Io.return (Io.output_string oc s)
     ;;
 
+    (* [printf] and [eprintf] go through [Io.fprintf], which only supports prepending a
+       prefix to the format and hardcodes the SGR reset as the suffix.
+
+       They therefore cannot emit the OSC 8 closing escape, so any [`Url _] attribute in
+       [style] is stripped before formatting.
+
+       Use [string_with_attr] or [output_string] if you need OSC 8 hyperlinks. *)
+    let sgr_only style =
+      List.filter style ~f:(function
+        | `Url _ -> false
+        | _ -> true)
+    ;;
+
     let eprintf style fmt =
-      Io.fprintf ~attrs:(All_attr.list_to_string (style :> All_attr.t list)) Io.stderr fmt
+      let sgr = sgr_only style in
+      Io.fprintf ~attrs:(All_attr.list_to_string (sgr :> All_attr.t list)) Io.stderr fmt
     ;;
 
     let printf style fmt =
-      Io.fprintf ~attrs:(All_attr.list_to_string (style :> All_attr.t list)) Io.stdout fmt
+      let sgr = sgr_only style in
+      Io.fprintf ~attrs:(All_attr.list_to_string (sgr :> All_attr.t list)) Io.stdout fmt
     ;;
   end
 
