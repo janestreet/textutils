@@ -55,7 +55,7 @@ let of_utf8 utf8 ~width ~prefer_split_on_spaces =
              | true -> chunks_split_on_spaces (uchars_left :: chunks) 0 []
              | false ->
                let num_uchars_in_chunk = get_num_uchars_in_chunk uchars_left in
-               let chunk, rest = List.split_n uchars_left num_uchars_in_chunk in
+               let #(chunk, rest) = List.split_n uchars_left num_uchars_in_chunk in
                let num_uchars_left = num_uchars_left - num_uchars_in_chunk in
                chunks_split_on_spaces (chunk :: chunks) num_uchars_left rest)
         in
