@@ -1,7 +1,6 @@
 open! Core
 
-module type%template
-  [@modality (p, c) = ((nonportable, uncontended), (portable, contended))] Io = sig
+module type Io = sig
   type 'a t
   type 'a fmt
   type out_channel
@@ -80,7 +79,7 @@ module type Console = sig
   module type Io = Io
   module type S = S
 
-  module%template.portable [@modality p] Make (Io : Io [@modality p]) :
+  module Make (Io : Io) :
     S
     with type 'a io := 'a Io.t
      and type 'a io_fmt := 'a Io.fmt

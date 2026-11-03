@@ -10,7 +10,7 @@ module Texel = struct
     | Line
     | Blank
     | Char of Attr.t list * Uchar.t
-  [@@deriving compare ~localize, sexp_of]
+  [@@deriving compare, sexp_of]
 end
 
 module type Screen = sig

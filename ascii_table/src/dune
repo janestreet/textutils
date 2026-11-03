@@ -3,4 +3,4 @@
  (public_name textutils.ascii_table)
  (libraries ascii_table_kernel console core)
  (preprocess
-  (pps ppx_jane)))
+  (pps ppx_jane -compare-require-explicit-locality)))

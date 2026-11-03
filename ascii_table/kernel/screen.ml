@@ -7,7 +7,7 @@ type t =
   ; rows : int
   ; cols : int
   }
-[@@deriving compare ~localize, sexp_of]
+[@@deriving compare, sexp_of]
 
 let create ~rows ~cols =
   let data =
@@ -84,7 +84,7 @@ let render t ~bars ~output ~close =
       match t.data.(row).(col) with
       | Char (attr, uchar) ->
         update_attr attr;
-        Uutf.Buffer.add_utf_8 buf uchar
+        Stdlib.Buffer.add_utf_8_uchar buf uchar
       | Blank -> Buffer.add_char buf ' '
       | Line ->
         update_attr [];

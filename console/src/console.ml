@@ -6,7 +6,7 @@ open Core
 module Unix = Core_unix
 open Poly
 
-module%template.portable [@modality p] Make (Io : Io [@modality p]) = struct
+module Make (Io : Io) = struct
   (* http://www.termsys.demon.co.uk/vtansi.htm *)
   module Ansi = struct
     let kill_line () = Io.print_string "\027[2K"
@@ -23,8 +23,10 @@ module%template.portable [@modality p] Make (Io : Io [@modality p]) = struct
     let save_cursor () = Io.print_string "\027[s"
     let unsave_cursor () = Io.print_string "\027[u"
 
-    module All_attr = Ansi_kernel.With_all_attrs
-    module Attr = Ansi_kernel.Attr
+    module All_attr : module type of Ansi_kernel.With_all_attrs =
+      Ansi_kernel.With_all_attrs
+
+    module Attr : module type of Ansi_kernel.Attr = Ansi_kernel.Attr
 
     type attr = Attr.t
 
@@ -268,7 +270,7 @@ module%template.portable [@modality p] Make (Io : Io [@modality p]) = struct
   ;;
 end
 
-include%template Make [@modality portable] (struct
+include Make (struct
     include Monad.Ident
 
     type 'a fmt = ('a, Out_channel.t, unit) format

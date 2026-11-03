@@ -15,10 +15,17 @@ let fold_utf8_with_start_pos t ~init ~f =
 ;;
 
 let of_utf8 utf8 ~width ~prefer_split_on_spaces =
-  let utf8 = String.Utf8.to_string utf8 in
-  match utf8 with
-  | "" -> [ String.Utf8.of_string "" ]
-  | _ ->
+  if width < 0
+  then failwith [%string "BUG: expected non-negative width, got %{width#Int}"];
+  if String.Utf8.length_in_uchars utf8 * assumed_width_per_uchar <= width
+  then
+    (* Fast path: the whole string (which may be empty) fits in one chunk. This avoids
+       building the per-uchar position lists below, which allocate several words per
+       character and dominate the cost of rendering tables whose cells don't need
+       wrapping. *)
+    [ utf8 ]
+  else (
+    let utf8 = String.Utf8.to_string utf8 in
     let uchar_ends_before_pos =
       Uutf.String.fold_utf_8 (fun acc start_pos _ -> start_pos :: acc) [] utf8
       |> List.cons (String.length utf8)
@@ -71,5 +78,5 @@ let of_utf8 utf8 ~width ~prefer_split_on_spaces =
             |> String.Utf8.of_string
         ; state = end_before
         })
-    |> Sequence.to_list
+    |> Sequence.to_list)
 ;;
