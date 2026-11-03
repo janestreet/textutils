@@ -64,7 +64,7 @@ let create
     List.map cols ~f:(fun column -> Cell.create [ h_attr, Column.header column ]) :: body
   in
   let heights =
-    if [%compare.equal: Display.t] display Line
+    if ([%compare.equal: Display.t] [@mode local]) display Line
     then List.map grid_data ~f:(fun _ -> 1)
     else
       List.map grid_data ~f:(fun row ->
@@ -98,8 +98,8 @@ let is_empty t = List.is_empty t.widths
 let to_screen t ~prefer_split_on_spaces =
   assert (List.length t.data = List.length t.heights);
   let mid_row =
-    if [%compare.equal: Display.t] t.display Tall_box
-       || [%compare.equal: Display.t] t.display Medium_box
+    if ([%compare.equal: Display.t] [@mode local]) t.display Tall_box
+       || ([%compare.equal: Display.t] [@mode local]) t.display Medium_box
     then 1
     else 0
   in
@@ -109,11 +109,13 @@ let to_screen t ~prefer_split_on_spaces =
   let rows = list_sum t.heights ~f:(( + ) mid_row) + 3 - (2 * mid_row) in
   let screen = Screen.create ~rows ~cols in
   let texel : Screen.Texel.t =
-    if [%compare.equal: Display.t] t.display Column_titles then Blank else Line
+    if ([%compare.equal: Display.t] [@mode local]) t.display Column_titles
+    then Blank
+    else Line
   in
   Screen.hline screen texel ~row:0;
   Screen.hline screen texel ~row:(rows - 1);
-  if not ([%compare.equal: Display.t] t.display Blank)
+  if not (([%compare.equal: Display.t] [@mode local]) t.display Blank)
   then (
     if t.left_boundary then Screen.vline screen texel ~col:0;
     ignore
@@ -139,7 +141,7 @@ let to_screen t ~prefer_split_on_spaces =
             ~init:(1 + t.spacing)
             ~f:(fun col element (width, align) ->
               let lines = Cell.wrap_lines element ~width ~prefer_split_on_spaces in
-              if [%compare.equal: Display.t] t.display Line
+              if ([%compare.equal: Display.t] [@mode local]) t.display Line
               then (
                 match lines with
                 | [] -> ()
@@ -159,12 +161,12 @@ let to_screen t ~prefer_split_on_spaces =
               col + 1 + (t.spacing * 2) + width)
           : int);
        let row = row + height in
-       if [%compare.equal: Display.t] t.display Tall_box || header_row
+       if ([%compare.equal: Display.t] [@mode local]) t.display Tall_box || header_row
        then (
-         if not ([%compare.equal: Display.t] t.display Blank)
+         if not (([%compare.equal: Display.t] [@mode local]) t.display Blank)
          then Screen.hline screen Line ~row;
          row + 1)
-       else if [%compare.equal: Display.t] t.display Medium_box
+       else if ([%compare.equal: Display.t] [@mode local]) t.display Medium_box
        then (
          let boundaries =
            (t.left_boundary :: t.interior_boundaries) @ [ t.right_boundary ]

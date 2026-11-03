@@ -1,7 +1,8 @@
 open! Core
 
 module type%template
-  [@modality (p, c) = ((nonportable, uncontended), (portable, contended))] Io = sig
+  [@modality (p, c) = ((nonportable, uncontended), (portable, contended))]
+  Io = sig
   type 'a t
   type 'a fmt
   type out_channel : value mod c p

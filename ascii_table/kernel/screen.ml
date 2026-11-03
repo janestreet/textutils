@@ -55,12 +55,20 @@ let string t align attr text ~row ~col ~width =
 ;;
 
 let get_symbol t ~row ~col =
-  let top = row > 0 && [%compare.equal: Texel.t] t.data.(row - 1).(col) Line in
-  let bottom =
-    row < t.rows - 1 && [%compare.equal: Texel.t] t.data.(row + 1).(col) Line
+  let top =
+    row > 0 && ([%compare.equal: Texel.t] [@mode local]) t.data.(row - 1).(col) Line
   in
-  let left = col > 0 && [%compare.equal: Texel.t] t.data.(row).(col - 1) Line in
-  let right = col < t.cols - 1 && [%compare.equal: Texel.t] t.data.(row).(col + 1) Line in
+  let bottom =
+    row < t.rows - 1
+    && ([%compare.equal: Texel.t] [@mode local]) t.data.(row + 1).(col) Line
+  in
+  let left =
+    col > 0 && ([%compare.equal: Texel.t] [@mode local]) t.data.(row).(col - 1) Line
+  in
+  let right =
+    col < t.cols - 1
+    && ([%compare.equal: Texel.t] [@mode local]) t.data.(row).(col + 1) Line
+  in
   Table_char.connect
     ?top:(Option.some_if top ())
     ?bottom:(Option.some_if bottom ())
@@ -73,8 +81,8 @@ let render t ~bars ~output ~close =
   let buf = Buffer.create 1024 in
   let current_attr = ref [] in
   let update_attr attr =
-    let attr = List.sort ~compare:[%compare: Attr.t] attr in
-    if not ([%compare.equal: Attr.t list] attr !current_attr)
+    let attr = List.sort ~compare:([%compare: Attr.t] [@mode local]) attr in
+    if not (([%compare.equal: Attr.t list] [@mode local]) attr !current_attr)
     then (
       if Buffer.length buf > 0 then output !current_attr buf;
       current_attr := attr)
@@ -84,7 +92,7 @@ let render t ~bars ~output ~close =
       match t.data.(row).(col) with
       | Char (attr, uchar) ->
         update_attr attr;
-        Uutf.Buffer.add_utf_8 buf uchar
+        Stdlib.Buffer.add_utf_8_uchar buf uchar
       | Blank -> Buffer.add_char buf ' '
       | Line ->
         update_attr [];

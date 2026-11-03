@@ -23,8 +23,10 @@ module%template.portable [@modality p] Make (Io : Io [@modality p]) = struct
     let save_cursor () = Io.print_string "\027[s"
     let unsave_cursor () = Io.print_string "\027[u"
 
-    module All_attr = Ansi_kernel.With_all_attrs
-    module Attr = Ansi_kernel.Attr
+    module All_attr : module type of Ansi_kernel.With_all_attrs =
+      Ansi_kernel.With_all_attrs
+
+    module Attr : module type of Ansi_kernel.Attr = Ansi_kernel.Attr
 
     type attr = Attr.t
 

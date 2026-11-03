@@ -3,4 +3,4 @@
  (public_name textutils.ascii_table_kernel)
  (libraries core_kernel.ansi_kernel core uutf)
  (preprocess
-  (pps ppx_jane)))
+  (pps ppx_jane -compare-require-explicit-locality)))
